@@ -36,7 +36,7 @@ VERF
 
 LOC
   #LOC_ID
-  AGENCE
+  LOC_AGN
 
 PLACE
   #PLACE_ID
