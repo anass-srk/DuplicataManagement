@@ -11,12 +11,16 @@ PLACE
   ADRESSE
   AGENCE
 -------------------------------
+CLI_CAT:
+  #CAT_ID
+  CAT_NAME
+
 CLI
   #CLI_ID
   CLI_EMAIL
   CLI_USERNAME
   CLI_PASSWORD
-  CLI_CAT
+  $CAT_ID
 
 ADM
   #ADM_ID
