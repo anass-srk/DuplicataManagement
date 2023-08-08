@@ -19,16 +19,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "CLI_CAT")
-public class ClientCategory {
+@Table(name = "REQ_STS")
+public class RequestStatus {
   @Id
   @GeneratedValue
-  @Column(name = "CAT_ID")
+  @Column(name = "RES_ID")
   private short id;
 
-  @Column(name = "CAT_NAME",nullable = false,unique = true)
+  @Column(name = "RES_NAME",nullable = false,unique = true)
   private String name;
 
-  @OneToMany(mappedBy = "category",cascade = CascadeType.REMOVE)
-  private List<Client> Clients;
+  @OneToMany(mappedBy = "status",cascade = CascadeType.REMOVE)
+  private List<Request> requests;
+
 }

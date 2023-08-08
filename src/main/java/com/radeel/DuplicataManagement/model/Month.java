@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,13 +19,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "MOIS")
-public class Mois {
+@Table(name = "MON")
+public class Month {
   @Id
   @GeneratedValue
-  @Column(name = "MOIS_ID")
-  private long id;
+  @Column(name = "MON_ID")
+  private short id;
 
-  @Column(name = "MOIS_NAME",nullable = false,unique = true)
+  @Column(name = "MON_NAME",nullable = false,unique = true)
   private String name;
+
+  @OneToMany(mappedBy = "month",cascade = CascadeType.REMOVE)
+  private List<Request> requests;
 }
