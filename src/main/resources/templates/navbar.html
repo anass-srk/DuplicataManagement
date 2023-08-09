@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head th:fragment="head">
+
+  <title>Gestion des duplicatas factures</title>
+
+  <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet"
+    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <script defer th:src="@{/js/bootstrap.bundle.min.js}"
+    integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+  <link th:href="@{/css/fontawesome.css}" rel="stylesheet">
+  <link th:href="@{/css/brands.css}" rel="stylesheet">
+  <link th:href="@{/css/solid.css}" rel="stylesheet">
+  <link th:href="@{/css/regular.css}" rel="stylesheet">
+  <link th:href="@{/css/main.css}">
+  
+  </head>
+  <style>
+    @font-face {
+      font-family: myFirst;
+      src: url('/font/Ubuntu-Regular.ttf');
+    }
+
+    body {
+      font-family: myFirst;
+    }
+
+  </style>
+<body>
+  <div th:fragment="nav_bar">
+    <nav class="navbar bg-body-tertiary fixed-top">
+      <div class="container-fluid" style="flex-wrap: nowrap;">
+        <div style="align-content: center;width: calc(100% - 50px);">
+          <a class="navbar-brand" href="#" style="font-size: 100%;">
+            Invoice Duplicatas Management
+          </a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+          aria-controls="offcanvasNavbar" aria-label="Toggle navigation" style="margin-right: 0%;flex-basis: 50px;">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        </div>
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+          <div class="offcanvas-header">
+            <!--h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5-->
+            <img th:src="@{/img/LOGO.png}">
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="import">import duplicatas</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="export">export duplicatas</a>
+              </li>
+              <li th:if="${logged_in}" class="nav-item">
+                <a class="nav-link" onclick="document.getElementById('Logout').submit();">Logout</a>
+              </li>
+              <form method="post" id="Logout" th:action="@{/logout}">
+                <input type="hidden" value="value" />
+              </form>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</body>
+
+</html>

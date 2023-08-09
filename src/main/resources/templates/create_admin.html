@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head th:insert="~{navbar.html :: head}">
+  <title>Gestion des duplicatas factures</title>
+
+<body>
+  <div th:replace="~{navbar.html :: nav_bar}"></div>
+  <div
+    style="position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);border-radius: 20px;box-shadow: 0 4px 8px rgba(0, 0, 0, 1);height: auto;min-width: 50%;">
+    <form style="margin: 8%;" th:action="@{/create_admin}" method="post">
+      <div class="mb-3">
+        <label for="InputUsername" class="form-label">Username</label>
+        <input type="text" class="form-control" id="InputUsername" name="username">
+      </div>
+      <div class="mb-3">
+        <label for="InputEmail" class="form-label">Email</label>
+        <input type="text" class="form-control" id="InputEmail" name="email">
+      </div>
+      <div class="mb-3">
+        <label for="InputPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="InputPassword" name="password">
+      </div>
+      <button type="submit" class="btn btn-primary"
+        style="margin-left: 50%;transform: translateX(-50%);min-width: 100px;width: 30%;">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </form>
+      <div th:if="${error != null}" th:value="${error}" class="alert alert-danger"
+        style="width: 100%;margin-bottom: -5px;border-radius: 20px;border-top-left-radius: 5px;border-top-right-radius: 5px;">
+      </div>
+  </div>
+</body>
+
+</html>

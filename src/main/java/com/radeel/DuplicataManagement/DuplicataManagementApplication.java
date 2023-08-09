@@ -38,7 +38,7 @@ public class DuplicataManagementApplication implements CommandLineRunner{
 
   @PostConstruct
   public void createDomains() throws DataAccessException, IOException{
-    jdbcTemplate.execute(new String(Files.readAllBytes(Paths.get("src/main/resources/static/domains.sql"))));
+    jdbcTemplate.execute(new String(Files.readAllBytes(Paths.get("src/main/resources/static/sql/domains.sql"))));
   }
 
   @Override
