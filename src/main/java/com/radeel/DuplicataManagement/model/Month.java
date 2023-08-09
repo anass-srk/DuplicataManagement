@@ -31,4 +31,7 @@ public class Month {
 
   @OneToMany(mappedBy = "month",cascade = CascadeType.REMOVE)
   private List<Request> requests;
+
+  @OneToMany(mappedBy = "month",cascade = CascadeType.REMOVE)
+  private List<ElectricityDuplicata> electricityDuplicatas;
 }

@@ -1,6 +1,6 @@
 package com.radeel.DuplicataManagement.model;
 
-import org.hibernate.annotations.Check;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,9 +38,16 @@ public class Request {
   @JoinColumn(name = "MON_ID")
   private Month month;
 
-  @Column(name = "YEAR",nullable = false)
-  @Check(constraints = "YEAR >= 0")
+  // @Column(name = "YEAR",nullable = false)
+  // @Check(constraints = "YEAR >= 0")
+  @Column(name = "YEAR",columnDefinition = "smalluint NOT NULL")
   private short year;
+
+  @Column(name = "REQ_DATE",nullable = false)
+  private LocalDateTime requestDate;
+
+  @Column(name = "RES_DATE",nullable = false)
+  private LocalDateTime responseDate;
 
   @ManyToOne
   @JoinColumn(name = "RES_ID")

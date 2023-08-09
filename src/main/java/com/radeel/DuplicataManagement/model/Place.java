@@ -2,6 +2,8 @@ package com.radeel.DuplicataManagement.model;
 
 import java.util.List;
 
+import org.hibernate.annotations.Check;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,13 +35,13 @@ public class Place {
   @JoinColumn(name = "LOC_ID")
   private Location location;
 
-  @Column(name = "SECT",nullable = false)
+  @Column(nullable = false)
   private short sect;
 
-  @Column(name = "TRN",nullable = false)
+  @Column(nullable = false)
   private short trn;
 
-  @Column(name = "ORD",nullable = false)
+  @Column(nullable = false)
   private short ord;
 
   @Column(name = "ADRESSE",nullable = false)
@@ -49,15 +51,25 @@ public class Place {
   @JoinColumn(name = "CLI_ID")
   private Client client;
 
-  @Column(name = "N_COMPT_ELE",nullable = false)
+  @Column(name = "N_COMPT_ELE",columnDefinition = "biguint NOT NULL")
   private long electricityMeter;
 
-  @Column(name = "N_COMPT_EAU",nullable = false)
-  private short waterMeter;
+  @Column(name = "N_COMPT_EAU",columnDefinition = "biguint NOT NULL")
+  private long waterMeter;
 
   @Column(name = "N_ROUE",nullable = false)
+  @Check(constraints = "N_ROUE >= 0")
   private short wheelCount;
+
+  @Column(name = "N_CONTR_ELE",nullable = false)
+  private long electricityContract;
+
+  @Column(name = "N_CONTR_EAU",nullable = false)
+  private long waterContract;
 
   @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE)
   private List<Request> requests;
+
+  @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE)
+  private List<ElectricityDuplicata> electricityDuplicatas; 
 }

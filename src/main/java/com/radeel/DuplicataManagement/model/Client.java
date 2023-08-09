@@ -1,6 +1,12 @@
 package com.radeel.DuplicataManagement.model;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -24,7 +30,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "CLI")
-public class Client {
+public class Client implements UserDetails{
   @Id
   @GeneratedValue
   @Column(name = "CLI_ID")
@@ -41,7 +47,7 @@ public class Client {
   private String username;
 
   @Column(name = "CLI_PASSWORD",unique = true,nullable = false)
-  private String passord;
+  private String password;
 
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "CAT_ID")
@@ -52,4 +58,29 @@ public class Client {
 
   @OneToMany(mappedBy = "client")
   private List<Place> places;
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return Collections.singletonList(new SimpleGrantedAuthority(Role.CLIENT.name()));
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }
