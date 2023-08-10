@@ -13,23 +13,12 @@
   <link th:href="@{/css/brands.css}" rel="stylesheet">
   <link th:href="@{/css/solid.css}" rel="stylesheet">
   <link th:href="@{/css/regular.css}" rel="stylesheet">
-  <link th:href="@{/css/main.css}">
+  <link th:href="@{/css/main.css}" rel="stylesheet">
   
   </head>
-  <style>
-    @font-face {
-      font-family: myFirst;
-      src: url('/font/Ubuntu-Regular.ttf');
-    }
-
-    body {
-      font-family: myFirst;
-    }
-
-  </style>
 <body>
   <div th:fragment="nav_bar">
-    <nav class="navbar bg-body-tertiary fixed-top">
+    <nav class="navbar bg-body-tertiary">
       <div class="container-fluid" style="flex-wrap: nowrap;">
         <div style="align-content: center;width: calc(100% - 50px);">
           <a class="navbar-brand" href="#" style="font-size: 100%;">
@@ -42,9 +31,9 @@
         </button>
         </div>
         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-          <div class="offcanvas-header">
+          <div class="offcanvas-header" style="height: 75px;">
             <!--h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5-->
-            <img th:src="@{/img/LOGO.png}">
+            <img th:src="@{/img/LOGO.png}" style="height: 75px;">
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
