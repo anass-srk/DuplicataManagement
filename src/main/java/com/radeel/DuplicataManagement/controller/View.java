@@ -25,4 +25,14 @@ public class View {
   public String createClient(){
     return "create_client";
   }
+
+  @GetMapping("/verify_client")
+  public String verifyClient(){
+    return "verify_client";
+  }
+
+  @GetMapping("/list_users")
+  public String listUsers(){
+    return "list_users";
+  }
 }

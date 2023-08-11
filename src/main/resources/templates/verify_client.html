@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head th:replace="~{navbar.html :: head}">
+  <title>Gestion des duplicatas factures</title>
+
+<body>
+  <div th:replace="~{navbar.html :: nav_bar}"></div>
+  <div class="container-parent">
+    <div class="container-box">
+      <div class="alert alert-secondary container-top">
+        <h1 class="mb-3 text-center">Set details</h1>
+      </div>
+      <form style="padding: 8%;" th:action="@{/verify_client}" method="post">
+        <div class="mb-3">
+          <label for="InputEmail" class="form-label">Email</label>
+          <input type="text" class="form-control" id="InputEmail" name="email">
+        </div>
+        <div class="mb-3">
+          <label for="InputPassword" class="form-label">Password</label>
+          <input type="password" class="form-control" id="InputPassword" name="password">
+        </div>
+        <button type="submit" class="btn btn-primary form-button">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </form>
+      <div th:if="${error != null}" th:value="${error}" class="alert alert-danger container-bottom">
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Account info</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          An mail has been sent to verify your email address.Use the link provided within to activate your account.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I understand</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script th:if="${sent}">
+    window.onload = (e) => {
+      const bootstrap = window.bootstrap;
+      let myModal = bootstrap.Modal.getOrCreateInstance(document.getElementsByClassName("modal")[0]);
+      myModal.show();
+    }
+  </script>
+</body>
+
+</html>
