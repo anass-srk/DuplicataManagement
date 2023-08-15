@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head th:replace="~{navbar_users.html :: head}">
+  <title>Gestion des duplicatas factures</title>
+
+<body>
+  <div th:replace="~{navbar_users.html :: nav_bar}"></div>
+
+  <table class="table table-responsive mt-2 text-center">
+    <thead class="table-dark">
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Username</th>
+        <th scope="col">Email</th>
+        <th scope="col">Category</th>
+        <th scope="col">Modify ?</th>
+        <th scope="col">Delete ?</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <script>
+    const tbody = document.getElementsByTagName("tbody")[0];
+    const addLine = (id,username,email,category) => {
+      const elem = document.createElement("tr");
+      elem.innerHTML = '<th scope="row">' + id + '</th>'
+      + '<td>' + username + '</td>'
+      + '<td>' + email + '</td>'
+      + '<td>' + category + '</td>'
+      + '<td><a href="/modify_user?id=' + id + '" class="btn btn-success fa-solid fa-rotate"></i></td>'
+      + '<td><a href="/delete_user?id=' + id + '" class="btn btn-danger fa-solid fa-trash"></i></td>';
+      tbody.appendChild(elem);
+    }
+    addLine(2,"ME","ME@ME.ME","A"); 
+  </script>
+</body>
+
+</html>

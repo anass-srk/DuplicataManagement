@@ -1,39 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="https://www.thymeleaf.org/">
 
-<head th:replace="~{navbar.html :: head}">
+<head th:replace="~{navbar_users.html :: head}">
   <title>Gestion des duplicatas factures</title>
 
 <body>
-  <div th:replace="~{navbar.html :: nav_bar}"></div>
+  <div th:replace="~{navbar_users.html :: nav_bar}"></div>
 
-  <table class="table table-responsive mt-2" style="text-align: center;">
-    <thead class="table-dark">
+  <table id="table" class="table-light table-bordered table-striped">
+    <thead>
       <tr>
-        <th scope="col">ID</th>
-        <th scope="col">Username</th>
-        <th scope="col">Email</th>
-        <th scope="col">Category</th>
-        <th scope="col">Modify ?</th>
-        <th scope="col">Delete ?</th>
+        <th>Role</th>
+        <th>Id</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Category</th>
       </tr>
     </thead>
     <tbody>
+      <tr th:each="user : ${users}">
+        <td th:text="${user.role}"/>
+        <td th:text="${user.id}" />
+        <td th:text="${user.username}" />
+        <td th:text="${user.email}" />
+        <td th:text="${user.category}" />
+      </tr>
     </tbody>
   </table>
-  <script>
-    const tbody = document.getElementsByTagName("tbody")[0];
-    const addLine = (id,username,email,category) => {
-      const elem = document.createElement("tr");
-      elem.innerHTML = '<th scope="row">' + id + '</th>'
-      + '<td>' + username + '</td>'
-      + '<td>' + email + '</td>'
-      + '<td>' + category + '</td>'
-      + '<td><a href="/modify_user?id=' + id + '" class="btn btn-success fa-solid fa-rotate"></i></td>'
-      + '<td><a href="/delete_user?id=' + id + '" class="btn btn-danger fa-solid fa-trash"></i></td>';
-      tbody.appendChild(elem);
-    }
-  </script>
+  <script defer th:src="@{/js/navbar_users.js}" type="text/javascript"></script>
 </body>
 
 </html>
