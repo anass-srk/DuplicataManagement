@@ -10,6 +10,22 @@ const table = new Tabulator("#table", {
   layout: "fitColumns",
 });
 
+const bootstrap = window.bootstrap;
+const actions = bootstrap.Modal.getOrCreateInstance(
+  document.getElementById("rowModal")
+);
+let link = ""; 
+const modifyBtn = document.getElementById("btn-modify");
+const deleteBtn = document.getElementById("btn-delete");
+
+table.on("rowDblClick", function (e, row) {
+  const data = row.getData();
+  link = (data['role'] == 'ADMIN' ? 'admin' : 'client') + '?id=' + data['id'];
+  modifyBtn.href = '/modify_' + link;
+  deleteBtn.href = "/delete_" + link;
+  actions.show();
+});
+
 const rangeCheck = document.getElementById("rangeSwitch");
 
 const handler = {
@@ -123,3 +139,5 @@ document.getElementById("filter-btn").onclick = (e) => {
     }
   });
 });
+
+
