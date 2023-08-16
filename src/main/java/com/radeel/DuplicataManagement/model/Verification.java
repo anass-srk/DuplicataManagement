@@ -24,7 +24,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "VERF")
 public class Verification {
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "VERF_UUID")
   private String uuid;
 

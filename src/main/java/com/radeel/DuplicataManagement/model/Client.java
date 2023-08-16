@@ -56,7 +56,7 @@ public class Client implements UserDetails{
   @OneToMany(mappedBy = "client",cascade = CascadeType.REMOVE)
   private List<Verification> verifications;
 
-  @OneToMany(mappedBy = "client")
+  @OneToMany(mappedBy = "client",cascade = CascadeType.REMOVE)
   private List<Place> places;
 
   @Override

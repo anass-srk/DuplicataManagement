@@ -40,6 +40,8 @@
   border-radius: 20px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+  text-align: center;
+  white-space: pre-wrap;
 }
 
 .form-button{

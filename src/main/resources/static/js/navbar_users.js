@@ -2,7 +2,7 @@ const filter_field = document.getElementById("filter-value");
 const filter_field2 = document.getElementById("filter-value2");
 let selected_value = "";
 let selected_columns = {};
-const types = {'id':'number','username':'text','email':'text'};
+const types = {'id':'number','username':'text','email':'text','category':'text','role':'text'};
 const row = document.getElementById("row");
 
 const table = new Tabulator("#table", {
@@ -14,15 +14,24 @@ const bootstrap = window.bootstrap;
 const actions = bootstrap.Modal.getOrCreateInstance(
   document.getElementById("rowModal")
 );
+const confirmation = bootstrap.Modal.getOrCreateInstance(
+  document.getElementById("confModal")
+);
 let link = ""; 
 const modifyBtn = document.getElementById("btn-modify");
 const deleteBtn = document.getElementById("btn-delete");
+const remBtn = document.getElementById("btn-remove");
+
+deleteBtn.onclick = (e) => {
+  actions.hide();
+  confirmation.show();
+};
 
 table.on("rowDblClick", function (e, row) {
   const data = row.getData();
   link = (data['role'] == 'ADMIN' ? 'admin' : 'client') + '?id=' + data['id'];
   modifyBtn.href = '/modify_' + link;
-  deleteBtn.href = "/delete_" + link;
+  remBtn.href = '/delete_' + link;
   actions.show();
 });
 
@@ -30,7 +39,7 @@ const rangeCheck = document.getElementById("rangeSwitch");
 
 const handler = {
   set(target, prop, nval) {
-    if (isNaN(nval)) {
+    if (Array.isArray(nval)) {
       table.addFilter(prop, ">=", nval[0]);
       table.addFilter(prop, "<=", nval[1]);
     } else {
@@ -40,7 +49,7 @@ const handler = {
   },
   deleteProperty(target,prop){
     const val = target[prop]
-    if (isNaN(val)) {
+    if (Array.isArray(val)) {
       table.removeFilter(prop, ">=", val[0]);
       table.removeFilter(prop, "<=", val[1]);
     } else {
@@ -140,4 +149,7 @@ document.getElementById("filter-btn").onclick = (e) => {
   });
 });
 
+document.onclick = (e) => {
+  console.log(table.getFilters());
+}
 

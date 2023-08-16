@@ -28,7 +28,7 @@
           <i class="fa-solid fa-plus"></i>
         </button>
       </form>
-      <div th:if="${error != null}" th:value="${error}" class="alert alert-danger container-bottom">
+      <div th:if="${error != null}" th:text="${error}" class="alert alert-danger container-bottom">
       </div>
     </div>
   </div>
