@@ -161,11 +161,20 @@ public class UserManager implements UserService,UserDetailsService{
       if(last.getDate().plusSeconds(cooldown).isAfter(Instant.now())){
         return false;
       }
-      client.setVerifications(new ArrayList<>());
       verificationRepository.deleteByClient(client);
     }
-    String link = saveVerification(client);
-    emailService.sendConfirmationEmail("/confirm_client?link=" + link,client.getEmail());
+    //String link = saveVerification(client);
+    
+    
+    String uuid;
+    do{
+      uuid = UUID.randomUUID().toString();
+    }while(verificationRepository.existsById(uuid));
+    var verf = new Verification(uuid,client,Instant.now());
+    clientRepository.save(client); 
+    verificationRepository.save(verf);
+    
+    emailService.sendConfirmationEmail("http://localhost:8080/confirm_client?link=" + uuid,client.getEmail());
     return true;
   }
 
@@ -175,7 +184,6 @@ public class UserManager implements UserService,UserDetailsService{
     if(verf.isPresent() && verf.get().getDate().plusSeconds(max_duration).isAfter(Instant.now())){
       var client = verf.get().getClient();
       client.setActive(true);
-      client.setVerifications(new ArrayList<>());
       verificationRepository.deleteByClient(client);
       clientRepository.save(client);
       return true;

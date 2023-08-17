@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head th:replace="~{navbar.html :: head}">
+  <title>Gestion des duplicatas factures</title>
+
+<body>
+  <div th:replace="~{navbar.html :: nav_bar}"></div>
+  <div class="container-parent">
+    <div class="container-box">
+      <div class="alert alert-secondary container-top">
+        <h1 class="mb-3 text-center">Modify client</h1>
+      </div>
+      <form style="padding: 8%;" th:action="@{/modify_account}" method="post">
+        <div class="mb-3">
+          <label for="InputUsername" class="form-label">Username</label>
+          <input type="text" class="form-control" id="InputUsername" name="username" th:value="${user.username}">
+        </div>
+        <div class="mb-3">
+          <label for="InputEmail" class="form-label">Email</label>
+          <input type="text" class="form-control" id="InputEmail" name="email" th:value="${user.email}">
+        </div>
+        <div class="mb-3">
+          <label for="InputCategory" class="form-label">Category</label>
+          <input type="text" class="form-control" id="InputCategory" name="category" th:value="${user.category}">
+        </div>
+        <div class="mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" name="check" id="passwordSwitch" value="0">
+            <label class="form-check-label form-label" for="passwordSwitch">Change password ?</label>
+          </div>
+          <input type="password" class="form-control" id="InputPassword" name="password" disabled>
+        </div>
+        <button type="submit" class="btn btn-success form-button">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </form>
+      <div th:if="${error != null}" th:value="${error}" class="alert alert-danger container-bottom">
+      </div>
+    </div>
+  </div>
+  <script>
+    const input = document.getElementById('InputPassword');
+    const check = document.getElementById('passwordSwitch');
+    check.onchange = (e) => {
+      input.toggleAttribute("disabled");
+    }
+  </script>
+</body>
+
+</html>

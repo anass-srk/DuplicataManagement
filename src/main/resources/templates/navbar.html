@@ -35,7 +35,27 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
-            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <ul th:if="${admin}" class="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="import">import duplicatas</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="export">export duplicatas</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="list_users">User Management</a>
+              </li>
+              <li th:if="${logged_in}" class="nav-item">
+                <a class="nav-link" onclick="document.getElementById('Logout').submit();">Logout</a>
+              </li>
+              <form method="post" id="Logout" th:action="@{/logout}">
+                <input type="hidden" value="value" />
+              </form>
+            </ul>
+            <ul th:unless="${admin}" class="navbar-nav justify-content-end flex-grow-1 pe-3">
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="/">Login</a>
               </li>

@@ -21,7 +21,7 @@ public class EmailService {
     MimeMessage message = sender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message,"utf-8");
     helper.setSubject("Confirm you email address");
-    helper.setFrom("equipment@supervision.com");
+    helper.setFrom("duplicata-management@radeel.com");
     helper.setTo(email);
     helper.setSentDate(new Date());
     helper.setText(content,true);

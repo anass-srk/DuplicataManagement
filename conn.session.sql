@@ -1,0 +1,1 @@
+UPDATE cli SET cli_active = false WHERE cat_id = 1;

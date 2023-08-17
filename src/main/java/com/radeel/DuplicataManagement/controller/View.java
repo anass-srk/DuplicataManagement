@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,6 +29,7 @@ import com.radeel.DuplicataManagement.util.UserRegister;
 import com.radeel.DuplicataManagement.util.UserResponse;
 
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -35,6 +37,7 @@ import jakarta.validation.constraints.NotBlank;
 
 @Controller
 @Validated
+@Transactional
 public class View {
   
   @Autowired
@@ -80,9 +83,16 @@ public class View {
     return "navbar";
   }
 
-  @GetMapping(value = {"/","/login"})
+  @GetMapping(value = {"/","/login","/logout"})
   public String Login(){
     return "login";
+  }
+
+  @GetMapping("/main")
+  public String Main(@AuthenticationPrincipal UserDetails user){
+    if(user == null) return "redirect:/login";
+    if(user instanceof Admin) return "redirect:/list_users";
+    return "redirect:/modify_account";
   }
 
   @GetMapping("/create_admin")
@@ -102,7 +112,7 @@ public class View {
       new ArrayList<>()
     );
     userManager.addAdmin(admin);
-    return "create_admin";
+    return "redirect:/list_users";
   }
 
   @GetMapping("/create_client")
@@ -129,7 +139,7 @@ public class View {
     cat.getClients().add(client);
     userManager.saveClientCategory(cat);
     userManager.addClient(client);
-    return "create_client";
+    return "redirect:/list_users";
   }
 
   @GetMapping("/verify_client")
@@ -141,22 +151,21 @@ public class View {
   @PostMapping("/verify_client")
   public String verify(
     @AuthenticationPrincipal Client client,
-    @Valid @NotBlank(message = "email must not be blanck") String email,
+    @Valid @Email @NotBlank(message = "email must not be blanck") String email,
     @Valid @Length(min = 8,message = "password must be at least 8 characters") String password
   ) throws MessagingException{
     if(client != null){
       client.setEmail(email);
       client.setPassword(passwordEncoder.encode(password));
       userManager.addVerficationLink(client);
-      userManager.saveClient(client);
     }
-    return "verify_client";
+    return "redirect:/login";
   }
 
-  @GetMapping("/confirm_client?link=")
+  @GetMapping("/confirm_client")
   public String confirm(@RequestParam String link){
     userManager.verifyClient(link);
-    return "login";
+    return "redirect:/login";
   }
 
   @GetMapping("/list_users")
@@ -174,10 +183,19 @@ public class View {
     return "modify_client";
   }
 
+  @GetMapping("/modify_account")
+  public String modifyAccount(
+    @AuthenticationPrincipal Client client,
+    Model model
+  ){
+    model.addAttribute("user",UserResponse.fromClient(client));
+    return "modify_account";
+  }
+
   @PostMapping("/modify_client")
   public String changeClient(
     @Valid @RequestParam long id,
-    @Valid @NotBlank(message = "email must not be blank") String email,
+    @Valid @Email @NotBlank(message = "email must not be blank") String email,
     @Valid @NotBlank(message = "username must not be blank") String username,
     @Valid @NotBlank(message = "category must not be blank") String category,
     String check,
@@ -199,6 +217,30 @@ public class View {
     return "redirect:/list_users";
   }
 
+  @PostMapping("/modify_account")
+  public String changeAccount(
+    @AuthenticationPrincipal Client client,
+    @Valid @Email @NotBlank(message = "email must not be blank") String email,
+    @Valid @NotBlank(message = "username must not be blank") String username,
+    @Valid @NotBlank(message = "category must not be blank") String category,
+    String check,
+    @RequestParam(required = false) String password
+  ){
+    if(check != null){
+      if(password == null || password.length() < 8){
+        throw new IllegalStateException("The password should contain at least 8 characters !");
+      }
+      client.setPassword(passwordEncoder.encode(password));
+    }
+    client.setEmail(email);
+    client.setUsername(username);
+    var cat = userManager.addClientCategory(category);
+    client.setCategory(cat);
+    cat.getClients().add(client);
+    userManager.saveClientCategory(cat);
+    return "redirect:/modify_account";
+  }
+
   @GetMapping("/delete_client")
   public String deleteClient(@Valid long id){
     userManager.deleteClient(id);
@@ -217,7 +259,7 @@ public class View {
    @PostMapping("/modify_admin")
   public String changeAdmin(
     @Valid @RequestParam long id,
-    @Valid @NotBlank(message = "email must not be blank") String email,
+    @Valid @Email @NotBlank(message = "email must not be blank") String email,
     @Valid @NotBlank(message = "username must not be blank") String username,
     String check,
     @RequestParam(required = false) String password

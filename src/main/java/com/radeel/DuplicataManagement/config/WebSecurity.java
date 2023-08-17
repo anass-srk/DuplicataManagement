@@ -24,7 +24,9 @@ public class WebSecurity {
            "/modify_client"
         ).hasAuthority(Role.ADMIN.name())
         .requestMatchers(
-          "/verify_client"
+          "/verify_client",
+          "/modify_account",
+          "/confirm_client"
         ).hasAuthority(Role.CLIENT.name())
         .requestMatchers("/**").permitAll()
       )
@@ -32,7 +34,7 @@ public class WebSecurity {
       log
         .loginPage("/login")
         .permitAll()
-        .defaultSuccessUrl("/create_client")
+        .defaultSuccessUrl("/main")
         .failureUrl("/login?error=1")
         )
       .logout(log -> 
