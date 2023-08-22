@@ -39,7 +39,7 @@ public class ElectricityDuplicata {
   private short year;
 
   @Column(name = "USAGE")
-  private int usage;
+  private short usage;
 
   @Column(name = "COD_BANK")
   private int bank_code;

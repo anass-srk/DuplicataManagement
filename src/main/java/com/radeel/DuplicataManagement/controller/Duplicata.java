@@ -68,8 +68,22 @@ public class Duplicata {
   @PostMapping("/import")
   public String AddData(
     @NotBlank(message = "gerance must not be blank !") String gerance,
-    @RequestParam("files") MultipartFile[] files
+    @RequestParam("files") MultipartFile[] files,
+    String check,
+    String localite
     ) throws IOException{
+    long loc = 0;
+    if(check != null){
+      if(localite != null){
+        try {
+          loc = Long.parseLong(localite);
+        } catch (NumberFormatException e) {
+          throw new IllegalStateException("localite must be a valid number !");
+        }
+      }else{
+        throw new IllegalStateException("localite must be a valid number !");
+      }
+    }
     if(!gerance.equals("1") && !gerance.equals("2")){
       throw new IllegalStateException("Undefined gerance !");
     }

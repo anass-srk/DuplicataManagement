@@ -56,22 +56,22 @@ public class Place {
   @ManyToOne
   @JoinColumn(name = "CLI_ID")
   private Client client;
-
+/*
   @Column(name = "N_COMPT_ELE",columnDefinition = "biguint NOT NULL")
   private long electricityMeter;
 
   @Column(name = "N_COMPT_EAU",columnDefinition = "biguint NOT NULL")
   private long waterMeter;
-
+*/
   @Column(name = "N_ROUE",nullable = false)
   @Check(constraints = "N_ROUE >= 0")
   private int wheelCount;
 
   @Column(name = "N_CONTR_ELE",nullable = false)
-  private long electricityContract;
+  private long electricityAccount;
 
   @Column(name = "N_CONTR_EAU",nullable = false)
-  private long waterContract;
+  private long waterAccount;
 
   @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE)
   private List<Request> requests;
