@@ -35,7 +35,6 @@ public class WebSecurity {
         .loginPage("/login")
         .permitAll()
         .defaultSuccessUrl("/main")
-        .failureUrl("/login?error=1")
         )
       .logout(log -> 
       log

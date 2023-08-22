@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "LOC")
 public class Location {
   @Id
-  @GeneratedValue
   @Column(name = "LOC_ID")
   private short id;
 

@@ -44,6 +44,12 @@ public class Place {
   @Column(nullable = false)
   private short ord;
 
+  @Column(name = "POL_ELE")
+  private long policeElectricity;
+
+  @Column(name = "POL_EAU")
+  private long policeWater;
+
   @Column(name = "ADRESSE",nullable = false)
   private String address;
 
@@ -59,7 +65,7 @@ public class Place {
 
   @Column(name = "N_ROUE",nullable = false)
   @Check(constraints = "N_ROUE >= 0")
-  private short wheelCount;
+  private int wheelCount;
 
   @Column(name = "N_CONTR_ELE",nullable = false)
   private long electricityContract;

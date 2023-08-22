@@ -39,10 +39,10 @@ public class ElectricityDuplicata {
   private short year;
 
   @Column(name = "USAGE")
-  private short usage;
+  private int usage;
 
   @Column(name = "COD_BANK")
-  private short bank_code;
+  private int bank_code;
 
   @Column(columnDefinition = "biguint NOT NULL")  
   private long idx1;
@@ -125,7 +125,7 @@ public class ElectricityDuplicata {
   @Column(columnDefinition = "unum NOT NULL")
   private BigDecimal mnttva6;
 
-  private short guichet;
+  private int guichet;
 
   @Column(columnDefinition = "unum NOT NULL")
   private BigDecimal mnt_cons;
@@ -163,11 +163,11 @@ public class ElectricityDuplicata {
   @Column(columnDefinition = "unum NOT NULL")
   private BigDecimal net_apayer;
 
-  private short nbr_taxe;
+  private int nbr_taxe;
 
   private LocalDate date_paie;
 
-  private short bonus;
+  private int bonus;
 
   @Column(columnDefinition = "unum NOT NULL")
   private BigDecimal tva_bonus;
@@ -176,7 +176,7 @@ public class ElectricityDuplicata {
 
   private LocalDate date_i2;
 
-  private short nbj;
+  private int nbj;
 
   @Column(columnDefinition = "unum NOT NULL")
   private BigDecimal rdf;

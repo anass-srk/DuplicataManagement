@@ -32,10 +32,10 @@
           <i class="fa-solid fa-plus"></i>
         </button>
       </form>
-      <div th:if="${error != null}" th:text="${error}" class="alert alert-danger container-bottom">
-      </div>
+      <div id="error" class="alert alert-danger container-bottom"></div>
     </div>
   </div>
+  <script th:src="@{/js/form.js}" type="text/javascript"></script>
 </body>
 
 </html>

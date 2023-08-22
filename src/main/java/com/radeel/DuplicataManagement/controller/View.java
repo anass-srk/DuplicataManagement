@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +20,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
@@ -53,15 +57,16 @@ public class View {
     MethodArgumentNotValidException.class,
     MissingServletRequestParameterException.class
   })
-  @ModelAttribute("error")
-  public String Error(Exception exception){
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody String Error(Exception exception){
+    String err = "";
     if(exception instanceof MethodArgumentNotValidException){
       var ex = (MethodArgumentNotValidException)exception;
       String errors = "";
       for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
         errors += error.getField() + error.getDefaultMessage() + '\n';
       }
-      return String.join("\n",errors);
+      err += String.join("\n",errors);
     }
     if(exception instanceof ConstraintViolationException){
       var ex = (ConstraintViolationException)exception;
@@ -69,12 +74,15 @@ public class View {
       for(final var cv : ex.getConstraintViolations()){
         errors += cv.getMessage() + '\n';
       }
-      return errors;
+      err += errors;
     }
     if(exception instanceof MissingServletRequestParameterException){
-      return ((MissingServletRequestParameterException)exception).getParameterName() + " parameter is missing !";
+      err += ((MissingServletRequestParameterException)exception).getParameterName() + " parameter is missing !";
     }
-    return exception.getMessage();
+    if(exception instanceof IllegalStateException){
+      err += ((IllegalStateException)exception).getMessage();
+    }
+    return err;
   }
 
 
@@ -101,7 +109,7 @@ public class View {
   }
 
   @PostMapping("/create_admin")
-  public String addAdmin(
+  @ResponseBody public String addAdmin(
     @Valid UserRegister adminRegister
   ){
     Admin admin = new Admin(
@@ -112,7 +120,7 @@ public class View {
       new ArrayList<>()
     );
     userManager.addAdmin(admin);
-    return "redirect:/list_users";
+    return "list_users";
   }
 
   @GetMapping("/create_client")
@@ -121,7 +129,7 @@ public class View {
   }
 
   @PostMapping("/create_client")
-  public String addClient(
+  @ResponseBody public String addClient(
     @Valid UserRegister clientRegister,
     @Valid @NotBlank(message = "category must not be blank !") String category
   ){
@@ -139,7 +147,7 @@ public class View {
     cat.getClients().add(client);
     userManager.saveClientCategory(cat);
     userManager.addClient(client);
-    return "redirect:/list_users";
+    return "list_users";
   }
 
   @GetMapping("/verify_client")
