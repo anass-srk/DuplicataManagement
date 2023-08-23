@@ -2,7 +2,10 @@ package com.radeel.DuplicataManagement.controller;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Scanner;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.FieldError;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.radeel.DuplicataManagement.service.DuplicataManager;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +30,9 @@ import jakarta.validation.constraints.NotBlank;
 @Validated
 @Transactional
 public class Duplicata {
+
+  @Autowired
+  private DuplicataManager duplicataManager;
 
   @ExceptionHandler({
     IllegalStateException.class,
@@ -70,33 +78,77 @@ public class Duplicata {
     @NotBlank(message = "gerance must not be blank !") String gerance,
     @RequestParam("files") MultipartFile[] files,
     String check,
-    String localite
+    String localite,
+    String police
     ) throws IOException{
-    long loc = 0;
-    if(check != null){
-      if(localite != null){
-        try {
-          loc = Long.parseLong(localite);
-        } catch (NumberFormatException e) {
-          throw new IllegalStateException("localite must be a valid number !");
-        }
-      }else{
-        throw new IllegalStateException("localite must be a valid number !");
-      }
-    }
     if(!gerance.equals("1") && !gerance.equals("2")){
       throw new IllegalStateException("Undefined gerance !");
     }
     if(files.length == 1 && files[0].isEmpty()){
       throw new IllegalStateException("Please select at least one file !");
     } 
-    System.out.println(gerance.equals("1") ? "water" : "electricity");
+    boolean elect = gerance.equals("1") ? false : true;
+    long loc = 0;
+    long pol = 0;
+    if(check != null){
+      if(localite != null && police != null){
+        try {
+          loc = Long.parseLong(localite);
+          pol = Long.parseLong(police);
+          for(var file : files){
+            String content = new String(file.getInputStream().readAllBytes(),StandardCharsets.UTF_8);
+            Scanner scanner = new Scanner(content);
+            if(!scanner.hasNextLine()){
+              scanner.close();
+              throw new IllegalStateException("The file is empty !");
+            }
+            scanner.nextLine();
+            while(scanner.hasNextLine()){
+              String line = scanner.nextLine();
+              List<String> parts = List.of(line.replaceAll(",",".").split("\\$"));
+              if(parts.size() != 63 && parts.size() != 62){
+                scanner.close();
+                throw new IllegalStateException(String.format(
+                  "Missing data: %d of 63 info was found !",parts.size()
+                ));
+              }
+              if(loc == Long.parseLong(parts.get(0)) && pol == Long.parseLong(parts.get(4))){
+                duplicataManager.saveElectricityDuplicata(line);
+                scanner.close();
+                return "import";
+              }
+            }
+            scanner.close();
+          }
+          throw new IllegalStateException(String.format(
+            "No duplicata with localite %d and police %d was found !",loc,pol
+          ));
+        } catch (NumberFormatException e) {
+          throw new IllegalStateException("localite and police must be valid numbers !");
+        }
+      }else{
+        throw new IllegalStateException("localite and police must be valid numbers !");
+      }
+    }
     for(var file : files){
-      System.out.println("File name: " + file.getOriginalFilename());
       String content = new String(file.getInputStream().readAllBytes(),StandardCharsets.UTF_8);
-      System.out.println("content length:" + content.length());
+      Scanner scanner = new Scanner(content);
+      if(!scanner.hasNextLine()){
+        scanner.close();
+        throw new IllegalStateException("The file is empty !");
+      }
+      scanner.nextLine();
+      while(scanner.hasNextLine()){
+        duplicataManager.saveElectricityDuplicata(scanner.nextLine());
+      }
+      scanner.close();
     }
     return "import";
+  }
+
+  @GetMapping("/export")
+  public String Export(){
+    return "export";
   }
 
 }

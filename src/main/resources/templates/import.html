@@ -19,6 +19,10 @@
             </div>
             <input type="number" class="form-control" id="InputLocalite" name="localite" disabled>
           </div>
+          <div class="col mb-3" style="margin: 5%;">
+            <label for="InputPolice" class="form-label">Police</label>
+            <input type="number" class="form-control" id="InputPolice" name="police" disabled>
+          </div>
           <div class="col input-group mb-3" style="margin: 5%;">
             <select class="form-select" name="gerance">
               <option selected>gérance</option>
@@ -39,10 +43,12 @@
     </div>
   </div>
   <script type="text/javascript">
-      const input = document.getElementById('InputLocalite');
-      const check = document.getElementById('localiteSwitch');
+      const localite = document.getElementById('InputLocalite');
+      const police = document.getElementById('InputPolice');
+      const check = document.getElementById('localiteSwitch'); 
       check.onchange = (e) => {
-        input.toggleAttribute("disabled");
+        localite.toggleAttribute("disabled");
+        police.toggleAttribute("disabled");
       }
       $("form").on("submit", function (e) {
         e.preventDefault();

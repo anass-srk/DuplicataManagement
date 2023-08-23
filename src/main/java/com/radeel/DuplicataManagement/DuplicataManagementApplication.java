@@ -21,7 +21,9 @@ import com.radeel.DuplicataManagement.model.Month;
 import com.radeel.DuplicataManagement.repository.AdminRepository;
 import com.radeel.DuplicataManagement.repository.ClientCategoryRepository;
 import com.radeel.DuplicataManagement.repository.ClientRepository;
+import com.radeel.DuplicataManagement.repository.ElectricityDuplicataRepository;
 import com.radeel.DuplicataManagement.repository.MonthRepository;
+import com.radeel.DuplicataManagement.service.DuplicataManager;
 import com.radeel.DuplicataManagement.service.UserManager;
 
 import jakarta.annotation.PostConstruct;
@@ -47,6 +49,13 @@ public class DuplicataManagementApplication implements CommandLineRunner{
 
   @Autowired
   private MonthRepository monthRepository;
+
+  @Autowired
+  private ElectricityDuplicataRepository electricityDuplicataRepository;
+
+  @Autowired
+  private DuplicataManager duplicataManager;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(DuplicataManagementApplication.class, args);
@@ -82,6 +91,6 @@ public class DuplicataManagementApplication implements CommandLineRunner{
       new Month((short)11,"NOV", new ArrayList<>(),new ArrayList<>()),
       new Month((short)12,"DEC", new ArrayList<>(),new ArrayList<>())
     );
-    monthRepository.saveAll(months);
+    monthRepository.saveAllAndFlush(months);
   }
 }

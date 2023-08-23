@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.UUID;
@@ -18,11 +19,15 @@ import com.radeel.DuplicataManagement.model.Location;
 import com.radeel.DuplicataManagement.model.Place;
 import com.radeel.DuplicataManagement.repository.ClientCategoryRepository;
 import com.radeel.DuplicataManagement.repository.ClientRepository;
+import com.radeel.DuplicataManagement.repository.ElectricityDuplicataRepository;
 import com.radeel.DuplicataManagement.repository.LocationRepository;
 import com.radeel.DuplicataManagement.repository.MonthRepository;
 import com.radeel.DuplicataManagement.repository.PlaceRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class DuplicataManager{
 
   private enum EleVars{
@@ -101,10 +106,12 @@ public class DuplicataManager{
   }
 
   private static int diff = 0;
+  private static int order = -1;
 
   private static int getIndex(EleVars eleVars){
     int index = ele.get(eleVars);
-    return index <= ele.get(EleVars.CAT) ? index : index - diff;
+    order = index <= ele.get(EleVars.CAT) ? index : index - diff;
+    return order;
   }
 
   @Autowired
@@ -121,6 +128,9 @@ public class DuplicataManager{
 
   @Autowired
   private ClientRepository clientRepository;
+
+  @Autowired
+  private ElectricityDuplicataRepository electricityDuplicataRepository;
 
   public Location addLocation(short id,String agence){
     if(locationRepository.existsById(id)){
@@ -146,7 +156,8 @@ public class DuplicataManager{
     while(clientRepository.existsByEmail(uuid)){
       uuid = UUID.randomUUID().toString();
     }
-    return new Client(
+    return clientRepository.save( 
+    new Client(
       (short)0,
       false,
       uuid,
@@ -155,11 +166,12 @@ public class DuplicataManager{
       addClientCategory(category),
       new ArrayList<>(),
       new ArrayList<>()            
+    )
     );
   } 
 
   public ElectricityDuplicata importElectricityDuplicata(String content) {
-    List<String> parts = List.of(content.split("$"));
+    List<String> parts = List.of(content.replaceAll(",",".").split("\\$"));
     if(parts.size() != 63 && parts.size() != 62){
       throw new IllegalStateException(String.format(
         "Missing data: %d of 63 info was found !",parts.size()
@@ -170,6 +182,7 @@ public class DuplicataManager{
     }else{
       diff = 0;
     }
+    try{
     Location location = addLocation(
       Short.parseShort(parts.get(getIndex(EleVars.NUM_LOC))),
       parts.get(getIndex(EleVars.AGENCE))
@@ -194,6 +207,11 @@ public class DuplicataManager{
       .build();
       placeRepository.saveAndFlush(place);
     }
+    LocalDate date = LocalDate.of(1, 1, 1);
+    if(!parts.get(getIndex(EleVars.DAT_PAIE)).trim().equals("")){
+      date = LocalDate.parse(parts.get(getIndex(EleVars.DAT_PAIE)),DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+    
     return new ElectricityDuplicata(
       (long)0,
       place,
@@ -242,7 +260,7 @@ public class DuplicataManager{
       new BigDecimal(parts.get(getIndex(EleVars.MONTANT_FACTURE_HT))),
       new BigDecimal(parts.get(getIndex(EleVars.NET))),
       Integer.parseInt(parts.get(getIndex(EleVars.NBF))),
-      LocalDate.parse(parts.get(getIndex(EleVars.DAT_PAIE)),DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+      date,
       Integer.parseInt(parts.get(getIndex(EleVars.BON))),
       new BigDecimal(parts.get(getIndex(EleVars.TVA_BON))),
       LocalDate.parse(parts.get(getIndex(EleVars.DATE_INDEX_1)),DateTimeFormatter.ofPattern("dd/MM/yyyy")),
@@ -250,6 +268,16 @@ public class DuplicataManager{
       Integer.parseInt(parts.get(getIndex(EleVars.NBJ))),
       new BigDecimal(parts.get(getIndex(EleVars.RFE_ELEC))),
       new BigDecimal(parts.get(getIndex(EleVars.TVA_RFE_ELEC)))
+    );
+    }
+    catch(NumberFormatException exception){
+      throw new IllegalStateException(order + "\t" + exception.getMessage());
+    }
+  }
+
+  public ElectricityDuplicata saveElectricityDuplicata(String content){
+    return electricityDuplicataRepository.save(
+      importElectricityDuplicata(content)
     );
   }
   
