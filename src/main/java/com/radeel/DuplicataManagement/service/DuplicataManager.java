@@ -5,10 +5,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.hibernate.mapping.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -146,7 +149,7 @@ public class DuplicataManager{
   }
 
   public ClientCategory addClientCategory(String name){
-    return clientCategoryRepository.findByName(name).orElse(
+    return clientCategoryRepository.findByName(name).orElseGet(() ->
       clientCategoryRepository.save(new ClientCategory((short)0, name,new ArrayList<>()))
     );
   }
@@ -276,9 +279,74 @@ public class DuplicataManager{
   }
 
   public ElectricityDuplicata saveElectricityDuplicata(String content){
-    return electricityDuplicataRepository.save(
-      importElectricityDuplicata(content)
-    );
+    var duplicata = importElectricityDuplicata(content);
+    if(electricityDuplicataRepository.existsByPlaceAndMonthAndYear(
+      duplicata.getPlace(),duplicata.getMonth(),duplicata.getYear()
+    )){
+      throw new IllegalStateException(String.format(
+        "The electricity duplicata with localite %d and police %d\n"
+      + "already exists for %d/%d",duplicata.getPlace().getLocation().getId()
+      ,duplicata.getPlace().getPoliceElectricity()
+      ,duplicata.getYear()
+      ,duplicata.getMonth().getId()
+      ));
+    }
+    return electricityDuplicataRepository.save(duplicata);
   }
   
+  public Optional<ElectricityDuplicata> exportElectricityDuplicata(
+    short localite,
+    long police,
+    LocalDate date
+    ){
+    var location = locationRepository.findById(localite);
+    if(!location.isPresent()){
+      return Optional.empty();
+    }
+    var place = placeRepository.findByLocationAndPoliceElectricity(
+      location.get(),
+      police
+    );
+    if(!place.isPresent()){
+      return Optional.empty();
+    }
+    return electricityDuplicataRepository.findByPlaceAndMonthAndYear(
+      place.get(),
+      monthRepository.findById((short)date.getMonthValue()).get(),
+      (short)date.getYear()
+    );
+  }
+
+  private boolean between(int s,int v,int e){
+    return v >= s && v <= e;
+  }
+
+  private int f(int y,int m){
+    return 16*y + m;
+  }
+  public List<ElectricityDuplicata> exportElectricityDuplicatas(
+    short localite,
+    long police,
+    LocalDate start,
+    LocalDate end
+  ){
+    var location = locationRepository.findById(localite);
+    if(!location.isPresent()){
+      return Collections.emptyList();
+    }
+    var place = placeRepository.findByLocationAndPoliceElectricity(
+      location.get(),
+      police
+    );
+    if(!place.isPresent()){
+      return Collections.emptyList();
+    }
+    final int s = f(start.getYear(),start.getMonthValue());
+    final int e = f(end.getYear(),end.getMonthValue());
+    if(s > e){
+      throw new IllegalStateException("The ending date should be after the starting date !");
+    }
+    return electricityDuplicataRepository.findByPlace(place.get())
+    .stream().filter(d -> between(s,f(d.getYear(),d.getMonth().getId()),e)).toList();
+  }
 }

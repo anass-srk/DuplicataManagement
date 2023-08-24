@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.ClientCategory;
+import com.radeel.DuplicataManagement.model.ElectricityDuplicata;
 import com.radeel.DuplicataManagement.model.Month;
 import com.radeel.DuplicataManagement.repository.AdminRepository;
 import com.radeel.DuplicataManagement.repository.ClientCategoryRepository;
