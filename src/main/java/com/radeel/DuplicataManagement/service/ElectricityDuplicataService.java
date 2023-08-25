@@ -3,33 +3,33 @@ package com.radeel.DuplicataManagement.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.radeel.DuplicataManagement.model.Client;
-import com.radeel.DuplicataManagement.model.ClientCategory;
 import com.radeel.DuplicataManagement.model.ElectricityDuplicata;
 import com.radeel.DuplicataManagement.model.Location;
+import com.radeel.DuplicataManagement.model.Month;
 import com.radeel.DuplicataManagement.model.Place;
-import com.radeel.DuplicataManagement.repository.ClientCategoryRepository;
-import com.radeel.DuplicataManagement.repository.ClientRepository;
 import com.radeel.DuplicataManagement.repository.ElectricityDuplicataRepository;
-import com.radeel.DuplicataManagement.repository.LocationRepository;
-import com.radeel.DuplicataManagement.repository.MonthRepository;
-import com.radeel.DuplicataManagement.repository.PlaceRepository;
+import com.radeel.DuplicataManagement.util.DuplicataResponse;
 
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class DuplicataManager{
+public class ElectricityDuplicataService extends DuplicataService{
+
+  @Autowired
+  private ElectricityDuplicataRepository repository;
+
+  private static final String header = "NUM_LOC$NUM_SEC$NUM_TRN$NUM_ORD$NUM_POL$CAT$NOM$ADRESSE_CONSOMMATION$USAGE$NUMERO_COMPTEUR$COD_BANQUE$INDEX1$INDEX2_VALIDER$MOI$ANN$CONSOMMATION_TOTAL$TR1$PR1$MT1$TVA1$TR2$PR2$MT2$TVA2$TR3$PR3$MT3$TVA3$TR4$PR4$MT4$TVA4$TR5$PR5$MT5$TVA5$TR6$PR6$MT6$TVA6$GUICH$MNT_CONS$TF$TPPAN$TVA$MONTANT_TEC$TVA_TEC$MONTANT_TLC$TVA_TLC$TAXES$TVA_TAXES$MONTANT_FACTURE_HT$NET$NBF$DAT_PAIE$AGENCE$BON$TVA_BON$DATE_INDEX_1$DATE_INDEX2$NBJ$RFE_ELEC$TVA_RFE_ELEC";
 
   private enum EleVars{
     NUM_LOC, NUM_SEC, NUM_TRN, NUM_ORD, NUM_POL, CAT, NOM, ADRESSE_CONSOMMATION, USAGE, NUMERO_COMPTEUR, COD_BANQUE,
@@ -114,72 +114,8 @@ public class DuplicataManager{
     order = index <= ele.get(EleVars.CAT) ? index : index - diff;
     return order;
   }
-
-  protected boolean between(int s, int v, int e) {
-    return v >= s && v <= e;
-  }
-
-  protected int f(int y, int m) {
-    return 16 * y + m;
-  }
-
-  @Autowired
-  private LocationRepository locationRepository;
-
-  @Autowired 
-  private MonthRepository monthRepository;
-
-  @Autowired
-  private PlaceRepository placeRepository;
-
-  @Autowired
-  private ClientCategoryRepository clientCategoryRepository;
-
-  @Autowired
-  private ClientRepository clientRepository;
-
-  @Autowired
-  private ElectricityDuplicataRepository electricityDuplicataRepository;
-
-  public Location addLocation(short id,String agence){
-    if(locationRepository.existsById(id)){
-      var loc = locationRepository.findById(id).get();
-      if(loc.getAgence().equals(agence)){
-        return loc;
-      }
-      throw new IllegalStateException(String.format(
-        "The agency corresponding to localite %d is %s !",id,agence
-      ));
-    }
-    return locationRepository.save(new Location(id, agence,new ArrayList<>()));
-  }
-
-  public ClientCategory addClientCategory(String name){
-    return clientCategoryRepository.findByName(name).orElseGet(() ->
-      clientCategoryRepository.save(new ClientCategory((short)0, name,new ArrayList<>()))
-    );
-  }
-
-  public Client generateClient(String name,String category){
-    String uuid = UUID.randomUUID().toString();
-    while(clientRepository.existsByEmail(uuid)){
-      uuid = UUID.randomUUID().toString();
-    }
-    return clientRepository.save( 
-    new Client(
-      (short)0,
-      false,
-      uuid,
-      name,
-      UUID.randomUUID().toString(),
-      addClientCategory(category),
-      new ArrayList<>(),
-      new ArrayList<>()            
-    )
-    );
-  } 
-
-  public ElectricityDuplicata importElectricityDuplicata(String content) {
+  @Override
+  public void saveDuplicata(String content) {
     List<String> parts = List.of(content.replaceAll(",",".").split("\\$"));
     if(parts.size() != 63 && parts.size() != 62){
       throw new IllegalStateException(String.format(
@@ -216,16 +152,29 @@ public class DuplicataManager{
       .build();
       placeRepository.saveAndFlush(place);
     }
+
+    Month mon = monthRepository.findById(Short.parseShort(parts.get(getIndex(EleVars.MOI)))).orElseThrow(
+      () -> new IllegalStateException("Invalid month !")
+    );
+    short year = Short.parseShort(parts.get(getIndex(EleVars.ANN)));
+    if  (repository.existsByPlaceAndMonthAndYear(place,mon,year)) {
+        throw new IllegalStateException(String.format(
+          "The electricity duplicata with localite %d and police %d\n"
+              + "already exists for %d/%d",
+          place.getLocation().getId(), place.getPoliceElectricity(), year,
+          mon.getId()));
+    }
+
     LocalDate date = LocalDate.of(1, 1, 1);
     if(!parts.get(getIndex(EleVars.DAT_PAIE)).trim().equals("")){
       date = LocalDate.parse(parts.get(getIndex(EleVars.DAT_PAIE)),DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
     
-    return new ElectricityDuplicata(
+    var duplicata = new ElectricityDuplicata(
       (long)0,
       place,
-      monthRepository.findById(Short.parseShort(parts.get(getIndex(EleVars.MOI)))).get(),
-      Short.parseShort(parts.get(getIndex(EleVars.ANN))),
+      mon,
+      year,
       Short.parseShort(parts.get(getIndex(EleVars.USAGE))),
       Integer.parseInt(parts.get(getIndex(EleVars.COD_BANQUE))),
       Long.parseLong(parts.get(getIndex(EleVars.INDEX1))),
@@ -278,57 +227,95 @@ public class DuplicataManager{
       new BigDecimal(parts.get(getIndex(EleVars.RFE_ELEC))),
       new BigDecimal(parts.get(getIndex(EleVars.TVA_RFE_ELEC)))
     );
+    repository.save(duplicata);
     }
     catch(NumberFormatException exception){
       throw new IllegalStateException(order + "\t" + exception.getMessage());
     }
   }
 
-  public ElectricityDuplicata saveElectricityDuplicata(String content){
-    var duplicata = importElectricityDuplicata(content);
-    if(electricityDuplicataRepository.existsByPlaceAndMonthAndYear(
-      duplicata.getPlace(),duplicata.getMonth(),duplicata.getYear()
-    )){
-      throw new IllegalStateException(String.format(
-        "The electricity duplicata with localite %d and police %d\n"
-      + "already exists for %d/%d",duplicata.getPlace().getLocation().getId()
-      ,duplicata.getPlace().getPoliceElectricity()
-      ,duplicata.getYear()
-      ,duplicata.getMonth().getId()
-      ));
+  @Override
+  public boolean saveDuplicata(String content, short localite, long police) {
+    Scanner scanner = new Scanner(content);
+    if (!scanner.hasNextLine()) {
+      scanner.close();
+      throw new IllegalStateException("The file is empty !");
     }
-    return electricityDuplicataRepository.save(duplicata);
+    if(!header.equals(scanner.nextLine())){
+      scanner.close();
+      throw new IllegalStateException("Invalid electricity duplicata header !");
+    }
+    while (scanner.hasNextLine()) {
+      String line = scanner.nextLine();
+      List<String> parts = List.of(line.replaceAll(",", ".").split("\\$"));
+      if (parts.size() != 63 && parts.size() != 62) {
+        scanner.close();
+        throw new IllegalStateException(String.format(
+            "Missing data: %d of 63 info was found !", parts.size()));
+      }
+      if (
+        localite == Short.parseShort(parts.get(getIndex(EleVars.NUM_LOC))) &&
+        police == Long.parseLong(parts.get(getIndex(EleVars.NUM_POL)))
+      ) {
+        saveDuplicata(line);
+        scanner.close();
+        return true;
+      }
+    }
+    scanner.close();
+    return false;
   }
-  
-  public Optional<ElectricityDuplicata> exportElectricityDuplicata(
-    short localite,
-    long police,
-    LocalDate date
-    ){
+
+  @Override
+  public void saveDuplicatas(String content) {
+    Scanner scanner = new Scanner(content);
+    if (!scanner.hasNextLine()) {
+      scanner.close();
+      throw new IllegalStateException("The file is empty !");
+    }
+    if(!header.equals(scanner.nextLine())){
+      scanner.close();
+      throw new IllegalStateException("Invalid electricity duplicata header !");
+    }
+    while (scanner.hasNextLine()) {
+      saveDuplicata(scanner.nextLine());
+    }
+    scanner.close();
+  }
+
+  @Override
+  public DuplicataResponse exportDuplicata(short localite, long police, LocalDate date) {
     var location = locationRepository.findById(localite);
     if(!location.isPresent()){
-      return Optional.empty();
+      throw new IllegalStateException(String.format(
+        "No electricity duplicata exists with localite %d !",localite
+      ));
     }
     var place = placeRepository.findByLocationAndPoliceElectricity(
       location.get(),
       police
     );
     if(!place.isPresent()){
-      return Optional.empty();
+      throw new IllegalStateException(String.format(
+        "No electricity duplicata exists with police %d !",police
+      ));
     }
-    return electricityDuplicataRepository.findByPlaceAndMonthAndYear(
-      place.get(),
-      monthRepository.findById((short)date.getMonthValue()).get(),
-      (short)date.getYear()
+    return DuplicataResponse.fromElectricityDuplicata(
+      repository.findByPlaceAndMonthAndYear(
+        place.get(),
+        monthRepository.findById((short)date.getMonthValue()).get(),
+        (short)date.getYear()
+      ).orElseThrow(
+        () -> new IllegalStateException(String.format(
+        "No electricity duplicata exists with localite %d and police %d for %d/%d !"
+        ,localite,police,date.getYear(),monthRepository.findById((short)date.getMonthValue()).get()
+        ))
+      )
     );
   }
 
-  public List<ElectricityDuplicata> exportElectricityDuplicatas(
-    short localite,
-    long police,
-    LocalDate start,
-    LocalDate end
-  ){
+  @Override
+  public List<DuplicataResponse> exportDuplicatas(short localite, long police, LocalDate start, LocalDate end) {
     var location = locationRepository.findById(localite);
     if(!location.isPresent()){
       return Collections.emptyList();
@@ -345,7 +332,10 @@ public class DuplicataManager{
     if(s > e){
       throw new IllegalStateException("The ending date should be after the starting date !");
     }
-    return electricityDuplicataRepository.findByPlace(place.get())
-    .stream().filter(d -> between(s,f(d.getYear(),d.getMonth().getId()),e)).toList();
+    return repository.findByPlace(place.get()).stream()
+    .filter(d -> between(s,f(d.getYear(),d.getMonth().getId()),e))
+    .map(DuplicataResponse::fromElectricityDuplicata)
+    .toList();
   }
+  
 }

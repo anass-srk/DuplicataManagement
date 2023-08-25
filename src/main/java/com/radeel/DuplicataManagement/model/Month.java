@@ -34,4 +34,7 @@ public class Month {
 
   @OneToMany(mappedBy = "month",cascade = CascadeType.REMOVE)
   private List<ElectricityDuplicata> electricityDuplicatas;
+
+  @OneToMany(mappedBy = "month",cascade = CascadeType.REMOVE)
+  private List<WaterDuplicata> waterDuplicatas;
 }

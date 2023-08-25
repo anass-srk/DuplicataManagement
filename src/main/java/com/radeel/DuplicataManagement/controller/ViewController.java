@@ -42,7 +42,7 @@ import jakarta.validation.constraints.NotBlank;
 @Controller
 @Validated
 @Transactional
-public class View {
+public class ViewController {
   
   @Autowired
   private UserManager userManager;

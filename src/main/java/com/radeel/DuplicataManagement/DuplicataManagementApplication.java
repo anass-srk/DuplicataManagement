@@ -80,18 +80,18 @@ public class DuplicataManagementApplication implements CommandLineRunner{
     );
     adminRepository.save(admin);
     final List<Month> months= List.of(
-      new Month((short)1,"JAN", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)2,"FEB", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)3,"MAR", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)4,"APR", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)5,"MAY", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)6,"JUN", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)7,"JUL", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)8,"AUG", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)9,"SEP", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)10,"OCT", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)11,"NOV", new ArrayList<>(),new ArrayList<>()),
-      new Month((short)12,"DEC", new ArrayList<>(),new ArrayList<>())
+      new Month((short)1,"JAN", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)2,"FEB", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)3,"MAR", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)4,"APR", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)5,"MAY", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)6,"JUN", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)7,"JUL", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)8,"AUG", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)9,"SEP", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)10,"OCT",new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)11,"NOV",new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
+      new Month((short)12,"DEC",new ArrayList<>(),new ArrayList<>(),new ArrayList<>())
     );
     monthRepository.saveAllAndFlush(months);
   }

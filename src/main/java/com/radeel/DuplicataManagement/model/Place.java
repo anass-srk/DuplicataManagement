@@ -78,4 +78,7 @@ public class Place {
 
   @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE)
   private List<ElectricityDuplicata> electricityDuplicatas; 
+
+  @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE)
+  private List<WaterDuplicata> waterDuplicatas; 
 }
