@@ -23,8 +23,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.radeel.DuplicataManagement.model.Gerance;
 import com.radeel.DuplicataManagement.service.DuplicataService;
 import com.radeel.DuplicataManagement.service.ElectricityDuplicataService;
+import com.radeel.DuplicataManagement.service.WaterDuplicataService;
 import com.radeel.DuplicataManagement.util.DuplicataResponse;
 
 import jakarta.transaction.Transactional;
@@ -40,7 +42,8 @@ public class DuplicataController {
   @Autowired
   private ElectricityDuplicataService electricityDuplicataService;
 
-  
+  @Autowired
+  private WaterDuplicataService waterDuplicataService;
 
   private DuplicataService duplicataService;
 
@@ -55,7 +58,7 @@ public class DuplicataController {
   @ResponseBody String Error(Exception exception){
     String err = "";
     if(exception instanceof MethodArgumentTypeMismatchException){
-      err += "Localite or police is invalid !";
+      err += "Localite or police or gerance is invalid !";
     }
     if(exception instanceof MethodArgumentNotValidException){
       var ex = (MethodArgumentNotValidException)exception;
@@ -82,6 +85,19 @@ public class DuplicataController {
     return err;
   }
 
+  private void changeDuplicataType(Gerance gerance){
+    switch(gerance){
+      
+      case WATER:{
+        duplicataService = waterDuplicataService;
+      }break;
+      
+      case ELECTRICITY:{
+        duplicataService = electricityDuplicataService;
+      }break;
+    }
+  }
+
   @GetMapping("/import")
   public String duplicata(){
     return "import";
@@ -89,19 +105,16 @@ public class DuplicataController {
 
   @PostMapping("/import")
   public String AddData(
-    @NotBlank(message = "gerance must not be blank !") String gerance,
+    Gerance gerance,
     @RequestParam("files") MultipartFile[] files,
     String check,
     String localite,
     String police
     ) throws IOException{
-    if(!gerance.equals("1") && !gerance.equals("2")){
-      throw new IllegalStateException("Undefined gerance !");
-    }
     if(files.length == 1 && files[0].isEmpty()){
       throw new IllegalStateException("Please select at least one file !");
     } 
-    boolean elect = gerance.equals("1") ? false : true;
+    changeDuplicataType(gerance);
     short loc = 0;
     long pol = 0;
     if(check != null){
@@ -146,13 +159,14 @@ public class DuplicataController {
   @ResponseBody
   public List<DuplicataResponse> exportData(
     @Valid @RequestParam short localite,
-    @Valid @RequestParam("gerance") int g,
+    @Valid @RequestParam("gerance") Gerance gerance,
     @Valid @RequestParam long police,
     @Valid @RequestParam @NotBlank(message = "Do not mess with the frontend !") String flexRadioDefault,
     @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate m1,
     @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate sm,
     @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate em
   ){
+    changeDuplicataType(gerance);
     if(flexRadioDefault.equals("1")){
       if(m1 == null){
         throw new IllegalStateException("Missing date input !");

@@ -98,7 +98,7 @@ public class DuplicataResponse {
     return new DuplicataResponse(Gerance.ELECTRICITY, title, data);
   }
 
-  public static DuplicataResponse fromWaterDuplicate(WaterDuplicata duplicata){
+  public static DuplicataResponse fromWaterDuplicata(WaterDuplicata duplicata){
     String title = duplicata.getYear() + "/" + duplicata.getMonth().getId();
     final Place place = duplicata.getPlace();
     String addr1,addr2;

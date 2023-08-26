@@ -3,6 +3,7 @@ package com.radeel.DuplicataManagement.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Scanner;
@@ -89,7 +90,7 @@ public class WaterDuplicataService extends DuplicataService{
       .policeWater(police)
       .address(parts.get(getIndex(WatVars.ADRESSE_CONSOMMATION)))
       .client(client)
-      .waterAccount(Long.parseLong(parts.get(getIndex(WatVars.NUMERO_COMPTEUR))))
+      .waterAccount(Long.parseLong(parts.get(getIndex(WatVars.NUMERO_COMPTEUR)).replaceAll("L","")))
       .wheelCount(Integer.parseInt(parts.get(getIndex(WatVars.NBR_ROUE))))
       .build();
       placeRepository.saveAndFlush(place);
@@ -225,14 +226,50 @@ public class WaterDuplicataService extends DuplicataService{
 
   @Override
   public DuplicataResponse exportDuplicata(short localite, long police, LocalDate date) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'exportDuplicata'");
+    var location = locationRepository.findById(localite);
+    if (!location.isPresent()) {
+      throw new IllegalStateException(String.format(
+          "No water duplicata exists with localite %d !", localite));
+    }
+    var place = placeRepository.findByLocationAndPoliceWater(
+        location.get(),
+        police);
+    if (!place.isPresent()) {
+      throw new IllegalStateException(String.format(
+          "No water duplicata exists with police %d !", police));
+    }
+    return DuplicataResponse.fromWaterDuplicata(
+        repository.findByPlaceAndMonthAndYear(
+            place.get(),
+            monthRepository.findById((short) date.getMonthValue()).get(),
+            (short) date.getYear()).orElseThrow(
+                () -> new IllegalStateException(String.format(
+                    "No water duplicata exists with localite %d and police %d for %d/%d !", localite, police,
+                    date.getYear(), monthRepository.findById((short) date.getMonthValue()).get()))));
   }
 
   @Override
   public List<DuplicataResponse> exportDuplicatas(short localite, long police, LocalDate start, LocalDate end) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'exportDuplicatas'");
+    var location = locationRepository.findById(localite);
+    if(!location.isPresent()){
+      return Collections.emptyList();
+    }
+    var place = placeRepository.findByLocationAndPoliceWater(
+      location.get(),
+      police
+    );
+    if(!place.isPresent()){
+      return Collections.emptyList();
+    }
+    final int s = f(start.getYear(),start.getMonthValue());
+    final int e = f(end.getYear(),end.getMonthValue());
+    if(s > e){
+      throw new IllegalStateException("The ending date should be after the starting date !");
+    }
+    return repository.findByPlace(place.get()).stream()
+    .filter(d -> between(s,f(d.getYear(),d.getMonth().getId()),e))
+    .map(DuplicataResponse::fromWaterDuplicata)
+    .toList();
   }
 
 }

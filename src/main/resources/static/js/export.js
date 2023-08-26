@@ -71,7 +71,11 @@ window.onload = (e) => {
   }
   exportPdf = exportPDF;
   exportAll = function(){
-    const data = JSON.parse(sessionStorage.getItem("duplicatas"));
+    const dups = sessionStorage.getItem("duplicatas");
+    if(dups == null){
+      return;
+    }
+    const data = JSON.parse(dups);
     let doc = new jsPDF();
 
     for(let j = 0;j < data.length;++j){
@@ -121,7 +125,9 @@ window.onload = (e) => {
       data: data,
       success: function (data) {
         sessionStorage.setItem("duplicatas",JSON.stringify(data));
-        changeType(data[0].type);
+        if(data.length != 0){
+          changeType(data[0].type);
+        }
         if(data.length == 1){
           exportPDF(data[0].data,data[0].data[11] + "/" + data[0].data[10]);
         }else{
@@ -133,10 +139,10 @@ window.onload = (e) => {
             div.style.width = "9rem";
             div.style.margin = "1%";
             div.innerHTML =
-              '<img src="/img/electricity-bill.png" class="card-img-top" alt="...">' +
+              `<img src="/img/${data[0].type.toLowerCase()}-bill.png" class="card-img-top" alt="...">` +
               '<div class="card-body">' +
               `  <h5 class="card-title">${data[i].title}</h5>` +
-              `  <a class="btn btn-primary btn-sm" onclick="exportPdf(${data[i].data},${data[i].title})">Download</a>` +
+              `  <a class="btn btn-primary btn-sm" onclick="exportPdf([${data[i].data.map(d => "'" + d.toString() + "'")}],'${data[i].title}')">Download</a>` +
               "</div>";
             parent.appendChild(div);
           }
