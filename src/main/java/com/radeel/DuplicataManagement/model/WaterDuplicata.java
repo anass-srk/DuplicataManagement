@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "DUPL_WAT")
 public class WaterDuplicata {
