@@ -5,7 +5,6 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -19,16 +18,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "REQ_STS")
-public class RequestStatus {
+@Table(name = "GERANCE")
+public class DuplicataType {
   @Id
-  @Column(name = "RES_ID")
   private short id;
 
-  @Column(name = "RES_NAME",nullable = false,unique = true)
+  @Column(nullable = false,unique = true)
   private String name;
 
-  @OneToMany(mappedBy = "status",cascade = CascadeType.REMOVE)
-  private List<Request> requests;
-
+  @OneToMany(mappedBy = "type",orphanRemoval = true)
+  private List<Request> request;
 }

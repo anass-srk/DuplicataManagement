@@ -59,6 +59,9 @@ public class Client implements UserDetails{
   @OneToMany(mappedBy = "client",cascade = CascadeType.REMOVE)
   private List<Place> places;
 
+  @OneToMany(mappedBy = "client", cascade = CascadeType.REMOVE)
+  private List<Request> requests;
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return Collections.singletonList(new SimpleGrantedAuthority(Role.CLIENT.name()));

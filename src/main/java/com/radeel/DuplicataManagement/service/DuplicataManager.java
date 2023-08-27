@@ -174,7 +174,8 @@ public class DuplicataManager{
       UUID.randomUUID().toString(),
       addClientCategory(category),
       new ArrayList<>(),
-      new ArrayList<>()            
+      new ArrayList<>(),
+      new ArrayList<>()          
     )
     );
   } 

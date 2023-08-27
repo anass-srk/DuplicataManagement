@@ -22,11 +22,11 @@ public interface UserService {
   public void addClient(Client client);
   public Client getClientById(long id);
   public void saveClient(Client client);
-  public void deleteClient(long id);
+  public boolean deleteClient(long id);
   public void addAdmin(Admin admin);
   public Admin getAdminById(long id);
   public void saveAdmin(Admin admin);  
-  public void deleteAdmin(long id);
+  public boolean deleteAdmin(long id);
   public boolean addVerficationLink(Client client) throws MessagingException;
   public boolean verifyClient(String link);
 }

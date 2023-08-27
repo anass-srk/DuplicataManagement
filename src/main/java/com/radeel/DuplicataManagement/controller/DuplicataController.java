@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Gerance;
 import com.radeel.DuplicataManagement.service.DuplicataService;
 import com.radeel.DuplicataManagement.service.ElectricityDuplicataService;
@@ -83,6 +86,11 @@ public class DuplicataController {
       err += ((IllegalStateException)exception).getMessage();
     }
     return err;
+  }
+
+  @ModelAttribute("isAdmin")
+  public boolean isAdmin(@AuthenticationPrincipal Admin admin){
+    return admin != null;
   }
 
   private void changeDuplicataType(Gerance gerance){

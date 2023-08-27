@@ -2,7 +2,17 @@ const filter_field = document.getElementById("filter-value");
 const filter_field2 = document.getElementById("filter-value2");
 let selected_value = "";
 let selected_columns = {};
-const types = {'id':'number','username':'text','email':'text','category':'text','role':'text'};
+const types = {
+  'id':'number',
+  'localite':'number',
+  'police':'number',
+  'type':'text',
+  'admin_id':'number',
+  'client_id':'number',
+  'state':'text',
+  'request_date':'date',
+  'response_date':'date'
+};
 const row = document.getElementById("row");
 
 const table = new Tabulator("#table", {
@@ -11,38 +21,33 @@ const table = new Tabulator("#table", {
 });
 
 const bootstrap = window.bootstrap;
+const actions = bootstrap.Modal.getOrCreateInstance(
+  document.getElementById("actionsModal")
+);
 const errorModal = document.getElementById("errorModal");
-if (errorModal != null) {
+if(errorModal != null){
   bootstrap.Modal.getOrCreateInstance(errorModal).show();
 }
-const actions = bootstrap.Modal.getOrCreateInstance(
-  document.getElementById("rowModal")
-);
-const confirmation = bootstrap.Modal.getOrCreateInstance(
-  document.getElementById("confModal")
-);
 let link = ""; 
-const modifyBtn = document.getElementById("btn-modify");
-const deleteBtn = document.getElementById("btn-delete");
-const remBtn = document.getElementById("btn-remove");
-
-deleteBtn.onclick = (e) => {
-  actions.hide();
-  confirmation.show();
-};
+const approveBtn = document.getElementById("btn-approve");
+const refuseBtn = document.getElementById("btn-refuse");
 
 table.on("rowDblClick", function (e, row) {
   const data = row.getData();
-  link = (data['role'] == 'ADMIN' ? 'admin' : 'client') + '?id=' + data['id'];
-  modifyBtn.href = '/modify_' + link;
-  remBtn.href = '/delete_' + link;
-  actions.show();
+  link = "/answer_request?id=" + data["id"] + "&status=";
+  approveBtn.href = link + "APPROVED";
+  refuseBtn.href = link + "REFUSED";
+  if(data.state == "PENDING"){
+    actions.show();
+  }
 });
 
 const rangeCheck = document.getElementById("rangeSwitch");
 
+
 const handler = {
   set(target, prop, nval) {
+    console.log(nval);
     if (Array.isArray(nval)) {
       table.addFilter(prop, ">=", nval[0]);
       table.addFilter(prop, "<=", nval[1]);
@@ -96,15 +101,15 @@ let addFilter = () => {
     value += "<=< " + filter_field2.value.trim() + ' ';
     if(types[selected_value] == 'number'){
       proxy[selected_value] = [
-        Number.parseInt(filter_field.value.trim()),
-        Number.parseInt(filter_field2.value.trim()),
+        filter_field.valueAsNumber,
+        filter_field2.valueAsNumber
       ];
     }else{
       proxy[selected_value] = [filter_field.value.trim(),filter_field2.value.trim()];
     }
   }else{
     if(types[selected_value] == 'number'){
-      proxy[selected_value] = Number.parseInt(filter_field.value.trim());
+      proxy[selected_value] = filter_field.valueAsNumber;
     }else{
       proxy[selected_value] = filter_field.value.trim();
     }

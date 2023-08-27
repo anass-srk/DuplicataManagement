@@ -1,7 +1,6 @@
 package com.radeel.DuplicataManagement.model;
 
-import java.time.LocalDateTime;
-
+import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,13 +25,19 @@ public class Request {
   @Column(name = "REQ_ID")
   private long id;
 
+  @Column(name = "REQ_LOC")
+  private short localite;
+
+  @Column(name = "REQ_POL")
+  private long police;
+
   @ManyToOne
   @JoinColumn(name = "ADM_ID")
   private Admin admin;
 
   @ManyToOne
-  @JoinColumn(name = "PLACE_ID")
-  private Place place;
+  @JoinColumn(name = "CLI_ID")
+  private Client client;
 
   @ManyToOne
   @JoinColumn(name = "MON_ID")
@@ -44,13 +49,16 @@ public class Request {
   private short year;
 
   @Column(name = "REQ_DATE",nullable = false)
-  private LocalDateTime requestDate;
+  private LocalDate requestDate;
 
-  @Column(name = "RES_DATE",nullable = false)
-  private LocalDateTime responseDate;
+  @Column(name = "RES_DATE",nullable = true)
+  private LocalDate responseDate;
 
   @ManyToOne
   @JoinColumn(name = "RES_ID")
   private RequestStatus status;
 
+  @ManyToOne
+  @JoinColumn(name = "REQ_TYPE")
+  private DuplicataType type;
 }

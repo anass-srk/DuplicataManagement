@@ -18,13 +18,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.ClientCategory;
+import com.radeel.DuplicataManagement.model.DuplicataType;
 import com.radeel.DuplicataManagement.model.ElectricityDuplicata;
+import com.radeel.DuplicataManagement.model.Gerance;
 import com.radeel.DuplicataManagement.model.Month;
+import com.radeel.DuplicataManagement.model.RequestState;
+import com.radeel.DuplicataManagement.model.RequestStatus;
 import com.radeel.DuplicataManagement.repository.AdminRepository;
 import com.radeel.DuplicataManagement.repository.ClientCategoryRepository;
 import com.radeel.DuplicataManagement.repository.ClientRepository;
+import com.radeel.DuplicataManagement.repository.DuplicataTypeRepository;
 import com.radeel.DuplicataManagement.repository.ElectricityDuplicataRepository;
 import com.radeel.DuplicataManagement.repository.MonthRepository;
+import com.radeel.DuplicataManagement.repository.RequestStatusRepository;
 import com.radeel.DuplicataManagement.service.DuplicataManager;
 import com.radeel.DuplicataManagement.service.UserManager;
 
@@ -38,12 +44,6 @@ public class DuplicataManagementApplication implements CommandLineRunner{
   private JdbcTemplate jdbcTemplate;
 
   @Autowired
-  private ClientRepository clientRepository;
-
-  @Autowired
-  private ClientCategoryRepository clientCategoryRepository;
-
-  @Autowired
   private AdminRepository adminRepository;
 
   @Autowired
@@ -53,10 +53,10 @@ public class DuplicataManagementApplication implements CommandLineRunner{
   private MonthRepository monthRepository;
 
   @Autowired
-  private ElectricityDuplicataRepository electricityDuplicataRepository;
+  private DuplicataTypeRepository duplicataTypeRepository;
 
   @Autowired
-  private DuplicataManager duplicataManager;
+  private RequestStatusRepository requestStatusRepository;
 
 
 	public static void main(String[] args) {
@@ -79,7 +79,7 @@ public class DuplicataManagementApplication implements CommandLineRunner{
       new ArrayList<>()
     );
     adminRepository.save(admin);
-    final List<Month> months= List.of(
+    final List<Month> months = List.of(
       new Month((short)1,"JAN", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
       new Month((short)2,"FEB", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
       new Month((short)3,"MAR", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
@@ -94,5 +94,18 @@ public class DuplicataManagementApplication implements CommandLineRunner{
       new Month((short)12,"DEC",new ArrayList<>(),new ArrayList<>(),new ArrayList<>())
     );
     monthRepository.saveAllAndFlush(months);
+
+    final List<DuplicataType> types = List.of(
+      new DuplicataType((short)1,Gerance.ELECTRICITY.name(),new ArrayList<>()),
+      new DuplicataType((short)2,Gerance.WATER.name(),new ArrayList<>())
+    );
+    duplicataTypeRepository.saveAllAndFlush(types);
+
+    final List<RequestStatus> statuses = List.of(
+      new RequestStatus((short)0,RequestState.PENDING.name(),new ArrayList<>()),
+      new RequestStatus((short)1,RequestState.APPROVED.name(),new ArrayList<>()),
+      new RequestStatus((short)2,RequestState.REFUSED.name(),new ArrayList<>())
+    );
+    requestStatusRepository.saveAllAndFlush(statuses);
   }
 }

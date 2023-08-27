@@ -85,7 +85,8 @@ public abstract class DuplicataService {
       UUID.randomUUID().toString(),
       addClientCategory(category),
       new ArrayList<>(),
-      new ArrayList<>()            
+      new ArrayList<>(),
+      new ArrayList<>()          
     )
     );
   }

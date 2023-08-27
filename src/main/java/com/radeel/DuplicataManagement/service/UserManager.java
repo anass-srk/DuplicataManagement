@@ -233,22 +233,20 @@ public class UserManager implements UserService,UserDetailsService{
   }
 
   @Override
-  public void deleteClient(long id) {
+  public boolean deleteClient(long id) {
     if(clientRepository.existsById(id)){
       clientRepository.deleteById(id);
-    }else{
-      throw new UsernameNotFoundException(
-        String.format("No client with id '%d' exists !",id));
+      return true;
     }
+    return false;
   }
 
   @Override
-  public void deleteAdmin(long id) {
+  public boolean deleteAdmin(long id) {
     if(adminRepository.existsById(id)){
       adminRepository.deleteById(id);
-    }else{
-      throw new UsernameNotFoundException(
-        String.format("No admin with the email '%d' exists !",id));
+      return true;
     }
+    return false;
   }
 }
