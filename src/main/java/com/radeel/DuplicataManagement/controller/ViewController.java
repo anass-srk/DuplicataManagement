@@ -1,6 +1,8 @@
 package com.radeel.DuplicataManagement.controller;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,9 +19,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
@@ -50,7 +54,7 @@ public class ViewController {
     IllegalStateException.class,
     ConstraintViolationException.class,
     MethodArgumentNotValidException.class,
-    MissingServletRequestParameterException.class
+    MissingServletRequestParameterException.class,
   })
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody String Error(Exception exception){
@@ -83,6 +87,11 @@ public class ViewController {
   @ModelAttribute("isAdmin")
   public boolean isAdmin(@AuthenticationPrincipal Admin admin){
     return admin != null;
+  }
+
+  @ModelAttribute("logged_in")
+  public boolean isLoggedIn(@AuthenticationPrincipal UserDetails user){
+    return user != null;
   }
 
 
@@ -201,15 +210,25 @@ public class ViewController {
     return "modify_account";
   }
 
+  public record Point(short x,long y){}
+
   @PostMapping("/modify_client")
+  @ResponseBody
   public String changeClient(
     @Valid @RequestParam long id,
     @Valid @Email @NotBlank(message = "email must not be blank") String email,
     @Valid @NotBlank(message = "username must not be blank") String username,
     @Valid @NotBlank(message = "category must not be blank") String category,
     String check,
-    @RequestParam(required = false) String password
+    @RequestParam(required = false) String password,
+    @RequestParam ArrayList<Integer> l1
   ){
+    if(l1 != null){
+      System.out.println("STILL NONE !" + l1.size());
+      l1.forEach((e) -> {System.out.println(e);});
+    }else{
+      System.out.println("NONE !");
+    }
     Client client = userManager.getClientById(id);
     if(check != null){
       if(password == null || password.length() < 8){
@@ -223,7 +242,7 @@ public class ViewController {
     client.setCategory(cat);
     cat.getClients().add(client);
     userManager.saveClientCategory(cat);
-    return "redirect:/list_users";
+    return "list_users";
   }
 
   @PostMapping("/modify_account")

@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -93,6 +94,11 @@ public class DuplicataController {
     return admin != null;
   }
 
+  @ModelAttribute("logged_in")
+  public boolean isLoggedIn(@AuthenticationPrincipal UserDetails user){
+    return user != null;
+  }
+
   private void changeDuplicataType(Gerance gerance){
     switch(gerance){
       
@@ -113,7 +119,7 @@ public class DuplicataController {
 
   @PostMapping("/import")
   public String AddData(
-    Gerance gerance,
+    @Valid Gerance gerance,
     @RequestParam("files") MultipartFile[] files,
     String check,
     String localite,
@@ -140,7 +146,7 @@ public class DuplicataController {
           }
           if(!found){
             throw new IllegalStateException(String.format(
-                "No duplicata with localite %d and police %d was found !", localite, police
+                "No duplicata with localite %d and police %d was found !", loc, pol
             ));
           }
           return "import";

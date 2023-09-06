@@ -21,12 +21,20 @@ public class WebSecurity {
           "/create_admin",
            "/create_client",
            "/list_users",
-           "/modify_client"
+           "/modify_client",
+           "/delete_client",
+           "/modify_admin",
+           "/delete_admin",
+           "/import",
+           "/export",
+           "/answer_request"
         ).hasAuthority(Role.ADMIN.name())
         .requestMatchers(
           "/verify_client",
           "/modify_account",
-          "/confirm_client"
+          "/confirm_client",
+          "/client_requests",
+          "/create_request"
         ).hasAuthority(Role.CLIENT.name())
         .requestMatchers("/**").permitAll()
       )
@@ -35,6 +43,7 @@ public class WebSecurity {
         .loginPage("/login")
         .permitAll()
         .defaultSuccessUrl("/main")
+        .failureUrl("/login?error=true")
         )
       .logout(log -> 
       log

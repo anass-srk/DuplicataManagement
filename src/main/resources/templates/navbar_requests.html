@@ -86,7 +86,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
           <div class="offcanvas-body">
-            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+            <ul th:if="${isAdmin}" class="navbar-nav justify-content-end flex-grow-1 pe-3">
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="/">Login</a>
               </li>
@@ -95,6 +95,32 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="export">export duplicatas</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="list_users">user management</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="list_requests">request management</a>
+              </li>
+              <li th:if="${logged_in}" class="nav-item">
+                <a class="nav-link" onclick="document.getElementById('Logout').submit();">Logout</a>
+              </li>
+              <form method="post" id="Logout" th:action="@{/logout}">
+                <input type="hidden" value="value" />
+              </form>
+            </ul>
+            <ul th:unless="${isAdmin}" class="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="modify_client">modify account</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="client_requests">list requests</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="create_request">create request</a>
               </li>
               <li th:if="${logged_in}" class="nav-item">
                 <a class="nav-link" onclick="document.getElementById('Logout').submit();">Logout</a>

@@ -58,6 +58,12 @@ public class DuplicataManagementApplication implements CommandLineRunner{
   @Autowired
   private RequestStatusRepository requestStatusRepository;
 
+  @Autowired
+  private ClientCategoryRepository categoryRepository;
+
+  @Autowired
+  private ClientRepository clientRepository;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(DuplicataManagementApplication.class, args);
@@ -79,6 +85,15 @@ public class DuplicataManagementApplication implements CommandLineRunner{
       new ArrayList<>()
     );
     adminRepository.save(admin);
+    categoryRepository.saveAndFlush(
+      new ClientCategory((short)0, "A",new ArrayList<>())
+    );
+    Client client = new Client(
+      0,true,"me","me",passwordEncoder.encode("me"),
+      categoryRepository.findByName("A").get(),new ArrayList<>(),
+      new ArrayList<>(),new ArrayList<>()
+    );
+    clientRepository.saveAndFlush(client);
     final List<Month> months = List.of(
       new Month((short)1,"JAN", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),
       new Month((short)2,"FEB", new ArrayList<>(),new ArrayList<>(),new ArrayList<>()),

@@ -26,7 +26,7 @@
       </form>
       <div th:if="${error != null}" th:utext="${error}" class="alert alert-danger container-bottom">
       </div>
-      <div th:if="${param.error != null}" class="alert alert-danger container-bottom">
+      <div th:if="${param.error != null}" class="alert alert-danger container-bottom" style="display: block;">
         Unsuccessful login Attempt !
       </div>
     </div>

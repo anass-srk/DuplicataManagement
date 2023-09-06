@@ -308,7 +308,7 @@ public class ElectricityDuplicataService extends DuplicataService{
       ).orElseThrow(
         () -> new IllegalStateException(String.format(
         "No electricity duplicata exists with localite %d and police %d for %d/%d !"
-        ,localite,police,date.getYear(),monthRepository.findById((short)date.getMonthValue()).get()
+        ,localite,police,date.getYear(),date.getMonthValue()
         ))
       )
     );

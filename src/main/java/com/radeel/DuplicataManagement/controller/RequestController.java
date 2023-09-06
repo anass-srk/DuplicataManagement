@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.FieldError;
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
 import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.Gerance;
@@ -39,6 +41,7 @@ public class RequestController {
     ConstraintViolationException.class,
     MethodArgumentNotValidException.class,
     MissingServletRequestParameterException.class,
+    MethodArgumentTypeMismatchException.class
   })
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody String Error(Exception exception){
@@ -62,6 +65,9 @@ public class RequestController {
     if(exception instanceof MissingServletRequestParameterException){
       err += ((MissingServletRequestParameterException)exception).getParameterName() + " parameter is missing !";
     }
+    if(exception instanceof MethodArgumentTypeMismatchException){
+      err += "Invalid localite and gerance and police !";
+    }
     if(exception instanceof IllegalStateException){
       err += ((IllegalStateException)exception).getMessage();
     }
@@ -73,6 +79,11 @@ public class RequestController {
     return admin != null;
   }
 
+  @ModelAttribute("logged_in")
+  public boolean isLoggedIn(@AuthenticationPrincipal UserDetails user){
+    return user != null;
+  }
+
   @GetMapping("/list_requests")
   public String listRequests(Model model){
     var requests = service.getAllRequests();
@@ -80,16 +91,16 @@ public class RequestController {
     return "list_requests";
   }
 
-  @PostMapping("/answer_request")
+  @GetMapping("/answer_request")
   public String answerRequest(
+    @AuthenticationPrincipal Admin admin,
     @Valid long id,
-    @Valid RequestState state,
-    RedirectAttributes model
+    @Valid RequestState status
   ){
-    if(!service.answerRequest(id, state)){
-      model.addAttribute("error", true);
+    if(!service.answerRequest(admin,id, status)){
+      return "list_requests?error";
     }
-    return "redirect:/list_requests";
+    return "list_requests";
   }
 
   @GetMapping("/client_requests")
@@ -99,7 +110,7 @@ public class RequestController {
     ){
     var requests = service.getClientRequests(client);
     model.addAttribute("requests", requests);
-    return "client_requests";
+    return "list_requests";
   }
 
   @GetMapping("/create_request")
@@ -108,6 +119,7 @@ public class RequestController {
   }
 
   @PostMapping("/create_request")
+  @ResponseBody
   public String addRequest(
     @AuthenticationPrincipal Client client,
     @Valid short localite,
@@ -116,6 +128,6 @@ public class RequestController {
     @Valid LocalDate date 
   ){
     service.addRequest(client,localite,gerance,police,date);
-    return "redirect:/client_requests";
+    return "list_requests";
   }
 }

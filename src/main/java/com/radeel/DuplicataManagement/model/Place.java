@@ -50,7 +50,7 @@ public class Place {
   @Column(name = "POL_EAU")
   private long policeWater;
 
-  @Column(name = "ADRESSE",nullable = false)
+  @Column(name = "ADRESSE")
   private String address;
 
   @ManyToOne

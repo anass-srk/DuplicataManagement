@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.Gerance;
 import com.radeel.DuplicataManagement.model.Request;
@@ -42,7 +43,7 @@ public class RequestManager implements RequestService {
   }
 
   @Override
-  public boolean answerRequest(long id, RequestState state) {
+  public boolean answerRequest(Admin admin,long id, RequestState state) {
     var request = repository.findById(id);
     if(
       !request.isPresent() ||
@@ -52,6 +53,8 @@ public class RequestManager implements RequestService {
     }
     var re = request.get();
     re.setStatus(requestStatusRepository.findByName(state.name()).get());
+    re.setAdmin(admin);
+    re.setResponseDate(LocalDate.now());
     repository.save(re);
     return true;
   }

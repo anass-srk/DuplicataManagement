@@ -245,7 +245,7 @@ public class WaterDuplicataService extends DuplicataService{
             (short) date.getYear()).orElseThrow(
                 () -> new IllegalStateException(String.format(
                     "No water duplicata exists with localite %d and police %d for %d/%d !", localite, police,
-                    date.getYear(), monthRepository.findById((short) date.getMonthValue()).get()))));
+                    date.getYear(),date.getMonthValue()))));
   }
 
   @Override
