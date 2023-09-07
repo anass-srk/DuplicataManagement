@@ -24,8 +24,7 @@
           <i class="fa-solid fa-plus"></i>
         </button>
       </form>
-      <div th:if="${error != null}" th:value="${error}" class="alert alert-danger container-bottom">
-      </div>
+      <div id="error" class="alert alert-danger container-bottom"></div>
     </div>
   </div>
 
@@ -45,14 +44,7 @@
       </div>
     </div>
   </div>
-
-  <script th:if="${sent}">
-    window.onload = (e) => {
-      const bootstrap = window.bootstrap;
-      let myModal = bootstrap.Modal.getOrCreateInstance(document.getElementsByClassName("modal")[0]);
-      myModal.show();
-    }
-  </script>
+  <script th:src="@{/js/form.js}" type="text/javascript"></script>
 </body>
 
 </html>

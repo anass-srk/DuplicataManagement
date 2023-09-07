@@ -167,6 +167,7 @@ public class ViewController {
   }
 
   @PostMapping("/verify_client")
+  @ResponseBody
   public String verify(
     @AuthenticationPrincipal Client client,
     @Valid @Email @NotBlank(message = "email must not be blanck") String email,
@@ -177,7 +178,7 @@ public class ViewController {
       client.setPassword(passwordEncoder.encode(password));
       userManager.addVerficationLink(client);
     }
-    return "redirect:/login";
+    return "login";
   }
 
   @GetMapping("/confirm_client")
@@ -246,6 +247,7 @@ public class ViewController {
   }
 
   @PostMapping("/modify_account")
+  @ResponseBody
   public String changeAccount(
     @AuthenticationPrincipal Client client,
     @Valid @Email @NotBlank(message = "email must not be blank") String email,
@@ -286,7 +288,8 @@ public class ViewController {
     return "modify_admin";
   }
 
-   @PostMapping("/modify_admin")
+  @PostMapping("/modify_admin")
+  @ResponseBody
   public String changeAdmin(
     @Valid @RequestParam long id,
     @Valid @Email @NotBlank(message = "email must not be blank") String email,

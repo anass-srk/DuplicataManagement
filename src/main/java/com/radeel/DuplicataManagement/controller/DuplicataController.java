@@ -118,6 +118,7 @@ public class DuplicataController {
   }
 
   @PostMapping("/import")
+  @ResponseBody
   public String AddData(
     @Valid Gerance gerance,
     @RequestParam("files") MultipartFile[] files,
