@@ -16,6 +16,7 @@ import com.radeel.DuplicataManagement.repository.LocationRepository;
 import com.radeel.DuplicataManagement.repository.MonthRepository;
 import com.radeel.DuplicataManagement.repository.PlaceRepository;
 import com.radeel.DuplicataManagement.util.DuplicataResponse;
+import com.radeel.DuplicataManagement.util.Point;
 
 import jakarta.transaction.Transactional;
 
@@ -40,6 +41,27 @@ public abstract class DuplicataService {
   public abstract void saveDuplicata(String content);
   public abstract boolean saveDuplicata(String content,short localite,long police);
   public abstract void saveDuplicatas(String content);
+
+  public void setPolices(Client client, List<Point> list1,List<Point> list2) {
+    for (var p : list1) {
+      var location = locationRepository.findById(p.x()).orElseThrow(
+          () -> new IllegalStateException(String.format("No localite with id %d found !", p.x())));
+      var place = placeRepository.findByLocationAndPoliceElectricity(location, p.y()).orElseThrow(
+          () -> new IllegalStateException(String.format(
+              "No place with localite %d and police %d found !", p.x(), p.y())));
+      place.setClient(client);
+      placeRepository.save(place);
+    }
+    for (var p : list2) {
+      var location = locationRepository.findById(p.x()).orElseThrow(
+          () -> new IllegalStateException(String.format("No localite with id %d found !", p.x())));
+      var place = placeRepository.findByLocationAndPoliceWater(location, p.y()).orElseThrow(
+          () -> new IllegalStateException(String.format(
+              "No place with localite %d and police %d found !", p.x(), p.y())));
+      place.setClient(client);
+      placeRepository.save(place);
+    }
+  }
 
   public abstract DuplicataResponse exportDuplicata(short localite,long police,LocalDate date);
   public abstract List<DuplicataResponse> exportDuplicatas(short localite,long police,LocalDate start,LocalDate end);

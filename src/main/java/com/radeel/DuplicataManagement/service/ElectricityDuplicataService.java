@@ -337,5 +337,4 @@ public class ElectricityDuplicataService extends DuplicataService{
     .map(DuplicataResponse::fromElectricityDuplicata)
     .toList();
   }
-  
 }

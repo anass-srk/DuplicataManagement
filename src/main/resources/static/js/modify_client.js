@@ -85,7 +85,7 @@ $("#btn-add2").click(function () {
       (e) => e.x == localite2.valueAsNumber && e.y == police2.valueAsNumber
     ).length == 0
   ) {
-    list1.push(new Point(localite2.valueAsNumber, police2.valueAsNumber));
+    list2.push(new Point(localite2.valueAsNumber, police2.valueAsNumber));
     draw2();
   }
 });
@@ -94,14 +94,16 @@ $("form").on("submit", function (e) {
   e.preventDefault();
   const url = $(this).attr("action");
   let formData = $(this).serialize();
-  console.log(formData);
+  formData += "&list1=" + encodeURIComponent(JSON.stringify(list1));
+  formData += "&list2=" + encodeURIComponent(JSON.stringify(list2));
   $.ajax({
     type: "POST",
-    url: url + 
+    url2: url + 
     "&l1=" + list1.map(p => p.x).join(",") +
     "&p1=" + list1.map(p => p.y).join(",") +
     "&l2=" + list2.map(p => p.x).join(",") +
     "&p2=" + list2.map(p => p.y).join(","),
+    url: url,
     data: formData,
     success: function (data) {
       window.location.href = window.location.origin + "/" + data;

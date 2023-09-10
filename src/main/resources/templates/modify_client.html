@@ -41,6 +41,10 @@
               <button id="btn-rem1" type="button" class="btn btn-outline-secondary">Remove</button>
             </div>
             <div id="list-info1">
+              <ul th:each="epol : ${epols}" class="list-group list-group-horizontal">
+                <li th:text="${epol.x}" class="list-group-item"></li>
+                <li th:text="${epol.y}" class="list-group-item"></li>
+              </ul>
             </div>
           </div>
           <div class="col">
@@ -52,6 +56,10 @@
               <button id="btn-rem2" type="button" class="btn btn-outline-secondary">Remove</button>
             </div>
             <div id="list-info2">
+              <ul th:each="wpol : ${wpols}" class="list-group list-group-horizontal">
+                <li th:text="${wpol.x}" class="list-group-item"></li>
+                <li th:text="${wpol.y}" class="list-group-item"></li>
+              </ul>
             </div>
           </div>
         </div>

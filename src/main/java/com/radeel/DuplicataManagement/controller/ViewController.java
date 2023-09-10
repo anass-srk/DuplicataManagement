@@ -1,10 +1,13 @@
 package com.radeel.DuplicataManagement.controller;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JsonParser;
+import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,9 +28,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radeel.DuplicataManagement.model.Admin;
 import com.radeel.DuplicataManagement.model.Client;
+import com.radeel.DuplicataManagement.service.ElectricityDuplicataService;
 import com.radeel.DuplicataManagement.service.UserManager;
+import com.radeel.DuplicataManagement.util.Point;
 import com.radeel.DuplicataManagement.util.UserRegister;
 import com.radeel.DuplicataManagement.util.UserResponse;
 
@@ -49,6 +59,8 @@ public class ViewController {
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  @Autowired
+  private ElectricityDuplicataService duplicataService;
 
   @ExceptionHandler({
     IllegalStateException.class,
@@ -211,8 +223,6 @@ public class ViewController {
     return "modify_account";
   }
 
-  public record Point(short x,long y){}
-
   @PostMapping("/modify_client")
   @ResponseBody
   public String changeClient(
@@ -222,14 +232,9 @@ public class ViewController {
     @Valid @NotBlank(message = "category must not be blank") String category,
     String check,
     @RequestParam(required = false) String password,
-    @RequestParam ArrayList<Integer> l1
-  ){
-    if(l1 != null){
-      System.out.println("STILL NONE !" + l1.size());
-      l1.forEach((e) -> {System.out.println(e);});
-    }else{
-      System.out.println("NONE !");
-    }
+    String list1,
+    String list2
+  ) throws JsonMappingException, JsonProcessingException{
     Client client = userManager.getClientById(id);
     if(check != null){
       if(password == null || password.length() < 8){
@@ -243,6 +248,10 @@ public class ViewController {
     client.setCategory(cat);
     cat.getClients().add(client);
     userManager.saveClientCategory(cat);
+    ObjectMapper objectMapper = new ObjectMapper();
+    List<Point> ele = objectMapper.readValue(list1,new TypeReference<List<Point>>(){}); 
+    List<Point> wat = objectMapper.readValue(list2,new TypeReference<List<Point>>(){}); 
+    duplicataService.setPolices(client,ele,wat);
     return "list_users";
   }
 
@@ -268,7 +277,7 @@ public class ViewController {
     client.setCategory(cat);
     cat.getClients().add(client);
     userManager.saveClientCategory(cat);
-    return "redirect:/modify_account";
+    return "modify_account";
   }
 
   @GetMapping("/delete_client")
@@ -307,7 +316,7 @@ public class ViewController {
     admin.setEmail(email);
     admin.setUsername(username);
     userManager.saveAdmin(admin);
-    return "redirect:/list_users";
+    return "list_users";
   }
 
   @GetMapping("/delete_admin")
