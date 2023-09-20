@@ -128,6 +128,6 @@ public class RequestController {
     @Valid LocalDate date 
   ){
     service.addRequest(client,localite,gerance,police,date);
-    return "list_requests";
+    return "client_requests";
   }
 }

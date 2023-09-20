@@ -1,16 +1,16 @@
 package com.radeel.DuplicataManagement.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.radeel.DuplicataManagement.model.Location;
+import com.radeel.DuplicataManagement.model.Client;
+import com.radeel.DuplicataManagement.model.Locality;
 import com.radeel.DuplicataManagement.model.Place;
 
 public interface PlaceRepository extends JpaRepository<Place,Long> {
-  boolean existsByLocationAndPoliceElectricity(Location location,long policeElectricity);
-  Optional<Place> findByLocationAndPoliceElectricity(Location location,long policeElectricity);
-
-  boolean existsByLocationAndPoliceWater(Location location,long policeWater);
-  Optional<Place> findByLocationAndPoliceWater(Location location,long policeWater);
+  boolean existsByLocationAndSectAndTrnAndOrd(Locality location,short sect,short trn,short ord);
+  Optional<Place> findByLocationAndSectAndTrnAndOrd(Locality location,short sect,short trn,short ord);
+  List<Place> findByClient(Client client);
 }

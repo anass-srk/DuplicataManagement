@@ -2,6 +2,7 @@ package com.radeel.DuplicataManagement.util;
 
 import java.util.List;
 import com.radeel.DuplicataManagement.model.ElectricityDuplicata;
+import com.radeel.DuplicataManagement.model.ElectricityPolice;
 import com.radeel.DuplicataManagement.model.Gerance;
 import com.radeel.DuplicataManagement.model.Place;
 import com.radeel.DuplicataManagement.model.WaterDuplicata;
@@ -27,6 +28,15 @@ public class DuplicataResponse {
     String title = duplicata.getYear() + "/" + duplicata.getMonth().getId();
     final Place place = duplicata.getPlace();
     String addr1,addr2;
+    final var epol = place.getElectricityPolice();
+    String ep,ea; 
+    if(epol.size() != 0){
+      ep = String.valueOf(epol.get(0).getPolice());
+      ea = String.valueOf(epol.get(0).getAccount());
+    }else{
+      ep = "null";
+      ea = "null";
+    }
     if(place.getAddress().length() <= 15){
       addr1 = place.getAddress();
       addr2 = "";
@@ -42,8 +52,8 @@ public class DuplicataResponse {
       place.getClient().getUsername(),
       addr1,
       addr2,
-      String.valueOf(place.getPoliceElectricity()),
-      String.valueOf(place.getElectricityAccount()),
+      ep,
+      ea,
       String.format(
         "%d%d%d%d%d%d",
         duplicata.getYear(),
@@ -109,6 +119,15 @@ public class DuplicataResponse {
       addr1 = place.getAddress().substring(0, 15);
       addr2 = place.getAddress().substring(15);
     }
+    final var wpol = place.getWaterPolice();
+    String wp,wa; 
+    if(wpol.size() != 0){
+      wp = String.valueOf(wpol.get(0).getPolice());
+      wa = String.valueOf(wpol.get(0).getAccount());
+    }else{
+      wp = "null";
+      wa = "null";
+    }
     List<String> data = List.of(
       String.valueOf(place.getLocation().getId()),
       String.valueOf(place.getSect()),
@@ -117,8 +136,8 @@ public class DuplicataResponse {
       place.getClient().getUsername(),
       addr1,
       addr2,
-      String.valueOf(place.getPoliceWater()),
-      String.valueOf(place.getWaterAccount()),
+      wp,
+      wa,
       String.format(
         "%d%d%d%d%d%d",
         duplicata.getYear(),

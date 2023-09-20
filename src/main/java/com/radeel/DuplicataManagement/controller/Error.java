@@ -23,7 +23,7 @@ public class Error implements ErrorController{
       if(code == HttpStatus.FORBIDDEN.value()){
         return "403";
       }
-      model.addAttribute("error_code",String.format("Error code %d",code));
+      model.addAttribute("error_code",status.toString());
       return "error";
     }
     return "error";

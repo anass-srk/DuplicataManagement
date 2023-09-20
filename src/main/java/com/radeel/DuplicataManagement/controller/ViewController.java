@@ -119,9 +119,11 @@ public class ViewController {
 
   @GetMapping("/main")
   public String Main(@AuthenticationPrincipal UserDetails user){
-    if(user == null) return "redirect:/login";
+    if(user instanceof Client){
+      return ((Client)user).isActive() ? "redirect:/export" : "redirect:/verify_client";
+    } 
     if(user instanceof Admin) return "redirect:/list_users";
-    return "redirect:/modify_account";
+    return "redirect:/login";
   }
 
   @GetMapping("/create_admin")
@@ -210,7 +212,10 @@ public class ViewController {
     Model model,
     @Valid long id
   ){
-    model.addAttribute("user",UserResponse.fromClient(userManager.getClientById(id)));
+    var user = userManager.getClientById(id);
+    model.addAttribute("user",UserResponse.fromClient(user));
+    model.addAttribute("epols",duplicataService.getElectricityPolicesByClient(user));
+    model.addAttribute("wpols",duplicataService.getWaterPolicesByClient(user));
     return "modify_client";
   }
 

@@ -17,6 +17,8 @@ public class WebSecurity {
     http
       .authorizeHttpRequests(auth ->
       auth
+        .requestMatchers("/export")
+        .hasAnyAuthority(Role.ADMIN.name(),Role.CLIENT.name())
         .requestMatchers(
           "/create_admin",
            "/create_client",
@@ -26,7 +28,7 @@ public class WebSecurity {
            "/modify_admin",
            "/delete_admin",
            "/import",
-           "/export",
+           "/list_requests",
            "/answer_request"
         ).hasAuthority(Role.ADMIN.name())
         .requestMatchers(

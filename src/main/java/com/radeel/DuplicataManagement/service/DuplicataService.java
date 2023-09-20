@@ -9,12 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.ClientCategory;
-import com.radeel.DuplicataManagement.model.Location;
+import com.radeel.DuplicataManagement.model.Locality;
 import com.radeel.DuplicataManagement.repository.ClientCategoryRepository;
 import com.radeel.DuplicataManagement.repository.ClientRepository;
-import com.radeel.DuplicataManagement.repository.LocationRepository;
+import com.radeel.DuplicataManagement.repository.ElectricityPoliceRepository;
+import com.radeel.DuplicataManagement.repository.LocalityRepository;
 import com.radeel.DuplicataManagement.repository.MonthRepository;
 import com.radeel.DuplicataManagement.repository.PlaceRepository;
+import com.radeel.DuplicataManagement.repository.WaterPoliceRepository;
 import com.radeel.DuplicataManagement.util.DuplicataResponse;
 import com.radeel.DuplicataManagement.util.Point;
 
@@ -24,7 +26,7 @@ import jakarta.transaction.Transactional;
 public abstract class DuplicataService {
 
   @Autowired
-  protected LocationRepository locationRepository;
+  protected LocalityRepository locationRepository;
 
   @Autowired 
   protected MonthRepository monthRepository;
@@ -38,28 +40,48 @@ public abstract class DuplicataService {
   @Autowired
   protected ClientRepository clientRepository;
 
+  @Autowired
+  protected ElectricityPoliceRepository epoliceRepository;
+
+  @Autowired
+  protected WaterPoliceRepository wpoliceRepository;
+
   public abstract void saveDuplicata(String content);
   public abstract boolean saveDuplicata(String content,short localite,long police);
   public abstract void saveDuplicatas(String content);
 
   public void setPolices(Client client, List<Point> list1,List<Point> list2) {
     for (var p : list1) {
-      var location = locationRepository.findById(p.x()).orElseThrow(
-          () -> new IllegalStateException(String.format("No localite with id %d found !", p.x())));
-      var place = placeRepository.findByLocationAndPoliceElectricity(location, p.y()).orElseThrow(
-          () -> new IllegalStateException(String.format(
-              "No place with localite %d and police %d found !", p.x(), p.y())));
+      var police = epoliceRepository.findByPolice(p.y())
+      .stream().filter(pol -> pol.getPlace().getLocation().getId() == p.x()).toList();
+      if(police.size() == 0){
+        throw new IllegalStateException(String.format(
+          "No place with localite %d and police %d found !", p.x(), p.y())
+          );
+      }
+      var place = police.get(0).getPlace();
+      var user = place.getClient();
       place.setClient(client);
       placeRepository.save(place);
+      if(placeRepository.findByClient(user).size() == 0 && !user.isActive()){
+        clientRepository.delete(user);
+      }
     }
     for (var p : list2) {
-      var location = locationRepository.findById(p.x()).orElseThrow(
-          () -> new IllegalStateException(String.format("No localite with id %d found !", p.x())));
-      var place = placeRepository.findByLocationAndPoliceWater(location, p.y()).orElseThrow(
-          () -> new IllegalStateException(String.format(
-              "No place with localite %d and police %d found !", p.x(), p.y())));
+      var police = wpoliceRepository.findByPolice(p.y())
+      .stream().filter(pol -> pol.getPlace().getLocation().getId() == p.x()).toList();
+      if(police.size() == 0){
+        throw new IllegalStateException(String.format(
+          "No place with localite %d and police %d found !", p.x(), p.y())
+          );
+      }
+      var place = police.get(0).getPlace();
+      var user = place.getClient();
       place.setClient(client);
       placeRepository.save(place);
+      if(placeRepository.findByClient(user).size() == 0 && !user.isActive()){
+        clientRepository.delete(user);
+      }
     }
   }
 
@@ -74,7 +96,7 @@ public abstract class DuplicataService {
     return 16 * y + m;
   }
 
-  public Location addLocation(short id,String agence){
+  public Locality addLocation(short id,String agence){
     if(locationRepository.existsById(id)){
       var loc = locationRepository.findById(id).get();
       if(loc.getAgence().equals(agence)){
@@ -84,7 +106,7 @@ public abstract class DuplicataService {
         "The agency corresponding to localite %d is %s !",id,agence
       ));
     }
-    return locationRepository.save(new Location(id, agence,new ArrayList<>()));
+    return locationRepository.save(new Locality(id, agence,new ArrayList<>()));
   }
 
   public ClientCategory addClientCategory(String name){
@@ -111,6 +133,20 @@ public abstract class DuplicataService {
       new ArrayList<>()          
     )
     );
+  }
+
+  public List<Point> getElectricityPolicesByClient(Client client){
+    return placeRepository.findByClient(client).stream()
+    .filter(p -> p.getElectricityPolice().size() != 0)
+    .map(p -> new Point(p.getLocation().getId(),p.getElectricityPolice().get(0).getPolice()))
+    .toList();
+  }
+
+  public List<Point> getWaterPolicesByClient(Client client){
+    return placeRepository.findByClient(client).stream()
+    .filter(p -> p.getWaterPolice().size() != 0)
+    .map(p -> new Point(p.getLocation().getId(),p.getWaterPolice().get(0).getPolice()))
+    .toList();
   }
 
 }

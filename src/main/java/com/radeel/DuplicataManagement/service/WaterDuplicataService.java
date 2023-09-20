@@ -3,19 +3,22 @@ package com.radeel.DuplicataManagement.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.radeel.DuplicataManagement.model.Client;
-import com.radeel.DuplicataManagement.model.Location;
+import com.radeel.DuplicataManagement.model.Locality;
 import com.radeel.DuplicataManagement.model.Month;
 import com.radeel.DuplicataManagement.model.Place;
 import com.radeel.DuplicataManagement.model.WaterDuplicata;
+import com.radeel.DuplicataManagement.model.WaterPolice;
 import com.radeel.DuplicataManagement.repository.WaterDuplicataRepository;
 import com.radeel.DuplicataManagement.util.DuplicataResponse;
 
@@ -70,30 +73,44 @@ public class WaterDuplicataService extends DuplicataService{
       diff = 0;
     }
     try{
-    Location location = addLocation(
+    Locality location = addLocation(
       Short.parseShort(parts.get(getIndex(WatVars.NUM_LOC))),
       parts.get(getIndex(WatVars.AGENCE))
     );
     long police = Long.parseLong(parts.get(getIndex(WatVars.NUM_POL)));
-    Place place;
-    if(placeRepository.existsByLocationAndPoliceWater(location, police)){
-      place = placeRepository.findByLocationAndPoliceWater(location, police).get();
-    }else{
+    short sect = Short.parseShort(parts.get(getIndex(WatVars.NUM_SEC)));
+    short trn = Short.parseShort(parts.get(getIndex(WatVars.NUM_TRN)));
+    short ord = Short.parseShort(parts.get(getIndex(WatVars.NUM_ORD)));
+    Place place = placeRepository.findByLocationAndSectAndTrnAndOrd(location, sect, trn, ord).orElseGet(
+      () -> {
       String cat = diff == 0 ? parts.get(getIndex(WatVars.CAT)) : "A";
       String name = parts.get(getIndex(WatVars.NOM));
       Client client = generateClient(name, cat);
-      place = Place.builder()
+      return placeRepository.saveAndFlush(
+      Place.builder()
       .location(location)
       .sect(Short.parseShort(parts.get(getIndex(WatVars.NUM_SEC))))
       .trn(Short.parseShort(parts.get(getIndex(WatVars.NUM_TRN))))
       .ord(Short.parseShort(parts.get(getIndex(WatVars.NUM_ORD))))
-      .policeWater(police)
       .address(parts.get(getIndex(WatVars.ADRESSE_CONSOMMATION)))
       .client(client)
-      .waterAccount(Long.parseLong(parts.get(getIndex(WatVars.NUMERO_COMPTEUR)).replaceAll("L","")))
-      .wheelCount(Integer.parseInt(parts.get(getIndex(WatVars.NBR_ROUE))))
-      .build();
-      placeRepository.saveAndFlush(place);
+      .electricityPolice(new ArrayList<>())
+      .waterPolice(new ArrayList<>())
+      .build()
+      );
+      }
+    );
+    List<WaterPolice> waterPolice = place.getWaterPolice();
+    if(waterPolice.size() == 0){
+      waterPolice.add(wpoliceRepository.saveAndFlush(
+        new WaterPolice(
+          0,
+          police,
+          Long.parseLong(parts.get(getIndex(WatVars.NUMERO_COMPTEUR)).replaceAll("L","")),
+          Integer.parseInt(parts.get(getIndex(WatVars.NBR_ROUE))),
+          place
+        )
+      ));
     }
 
     Month mon = monthRepository.findById(Short.parseShort(parts.get(getIndex(WatVars.MOI)))).orElseThrow(
@@ -104,7 +121,7 @@ public class WaterDuplicataService extends DuplicataService{
         throw new IllegalStateException(String.format(
           "The electricity duplicata with localite %d and police %d\n"
               + "already exists for %d/%d",
-          place.getLocation().getId(), place.getPoliceWater(), year,
+          place.getLocation().getId(), waterPolice.get(0).getPolice(), year,
           mon.getId()));
     }
 
@@ -226,21 +243,16 @@ public class WaterDuplicataService extends DuplicataService{
 
   @Override
   public DuplicataResponse exportDuplicata(short localite, long police, LocalDate date) {
-    var location = locationRepository.findById(localite);
-    if (!location.isPresent()) {
+    var waterPolice = wpoliceRepository.findByPolice(police).stream()
+    .filter(pol -> pol.getPlace().getLocation().getId() == localite).toList();
+    if (waterPolice.size() == 0) {
       throw new IllegalStateException(String.format(
-          "No water duplicata exists with localite %d !", localite));
+          "No water duplicata exists with localite %d and police %d !", localite, police));
     }
-    var place = placeRepository.findByLocationAndPoliceWater(
-        location.get(),
-        police);
-    if (!place.isPresent()) {
-      throw new IllegalStateException(String.format(
-          "No water duplicata exists with police %d !", police));
-    }
+    var place = waterPolice.get(0).getPlace();
     return DuplicataResponse.fromWaterDuplicata(
         repository.findByPlaceAndMonthAndYear(
-            place.get(),
+            place,
             monthRepository.findById((short) date.getMonthValue()).get(),
             (short) date.getYear()).orElseThrow(
                 () -> new IllegalStateException(String.format(
@@ -250,26 +262,22 @@ public class WaterDuplicataService extends DuplicataService{
 
   @Override
   public List<DuplicataResponse> exportDuplicatas(short localite, long police, LocalDate start, LocalDate end) {
-    var location = locationRepository.findById(localite);
-    if(!location.isPresent()){
+    var waterElectricity = wpoliceRepository.findByPolice(police)
+        .stream().filter(p -> p.getPlace().getLocation().getId() == localite)
+        .toList();
+    if (waterElectricity.size() == 0) {
       return Collections.emptyList();
     }
-    var place = placeRepository.findByLocationAndPoliceWater(
-      location.get(),
-      police
-    );
-    if(!place.isPresent()){
-      return Collections.emptyList();
-    }
-    final int s = f(start.getYear(),start.getMonthValue());
-    final int e = f(end.getYear(),end.getMonthValue());
-    if(s > e){
+    var place = waterElectricity.get(0).getPlace();
+    final int s = f(start.getYear(), start.getMonthValue());
+    final int e = f(end.getYear(), end.getMonthValue());
+    if (s > e) {
       throw new IllegalStateException("The ending date should be after the starting date !");
     }
-    return repository.findByPlace(place.get()).stream()
-    .filter(d -> between(s,f(d.getYear(),d.getMonth().getId()),e))
-    .map(DuplicataResponse::fromWaterDuplicata)
-    .toList();
+    return repository.findByPlace(place).stream()
+        .filter(d -> between(s, f(d.getYear(), d.getMonth().getId()), e))
+        .map(DuplicataResponse::fromWaterDuplicata)
+        .toList();
   }
 
 }

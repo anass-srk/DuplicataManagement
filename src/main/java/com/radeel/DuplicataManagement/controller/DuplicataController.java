@@ -27,11 +27,13 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MultipartFile;
 
 import com.radeel.DuplicataManagement.model.Admin;
+import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.Gerance;
 import com.radeel.DuplicataManagement.service.DuplicataService;
 import com.radeel.DuplicataManagement.service.ElectricityDuplicataService;
 import com.radeel.DuplicataManagement.service.WaterDuplicataService;
 import com.radeel.DuplicataManagement.util.DuplicataResponse;
+import com.radeel.DuplicataManagement.util.Point;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
@@ -173,6 +175,7 @@ public class DuplicataController {
   @PostMapping(value = "/export",produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   public List<DuplicataResponse> exportData(
+    @AuthenticationPrincipal Client client,
     @Valid @RequestParam short localite,
     @Valid @RequestParam("gerance") Gerance gerance,
     @Valid @RequestParam long police,
@@ -182,6 +185,14 @@ public class DuplicataController {
     @Valid @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate em
   ){
     changeDuplicataType(gerance);
+    if(client != null){
+      if((gerance == Gerance.ELECTRICITY
+       && !duplicataService.getElectricityPolicesByClient(client).contains(new Point(localite,police)))
+       || (gerance == Gerance.WATER
+       && !duplicataService.getWaterPolicesByClient(client).contains(new Point(localite,police)))){
+        throw new IllegalStateException("Access denied !");
+      }
+    }
     if(flexRadioDefault.equals("1")){
       if(m1 == null){
         throw new IllegalStateException("Missing date input !");

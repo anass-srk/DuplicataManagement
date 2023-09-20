@@ -1,12 +1,14 @@
 package com.radeel.DuplicataManagement.model;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.annotations.Check;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -33,7 +35,7 @@ public class Place {
 
   @ManyToOne
   @JoinColumn(name = "LOC_ID")
-  private Location location;
+  private Locality location;
 
   @Column(nullable = false)
   private short sect;
@@ -44,11 +46,11 @@ public class Place {
   @Column(nullable = false)
   private short ord;
 
-  @Column(name = "POL_ELE")
-  private long policeElectricity;
+  @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE,fetch = FetchType.EAGER)
+  private List<ElectricityPolice> electricityPolice;
 
-  @Column(name = "POL_EAU")
-  private long policeWater;
+  @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE,fetch = FetchType.EAGER)
+  private List<WaterPolice> waterPolice;
 
   @Column(name = "ADRESSE")
   private String address;
@@ -63,15 +65,6 @@ public class Place {
   @Column(name = "N_COMPT_EAU",columnDefinition = "biguint NOT NULL")
   private long waterMeter;
 */
-  @Column(name = "N_ROUE",nullable = false)
-  @Check(constraints = "N_ROUE >= 0")
-  private int wheelCount;
-
-  @Column(name = "N_CONTR_ELE",nullable = false)
-  private long electricityAccount;
-
-  @Column(name = "N_CONTR_EAU",nullable = false)
-  private long waterAccount;
 
   @OneToMany(mappedBy = "place",cascade = CascadeType.REMOVE)
   private List<ElectricityDuplicata> electricityDuplicatas; 

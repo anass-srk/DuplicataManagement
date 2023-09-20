@@ -31,11 +31,11 @@ import com.radeel.DuplicataManagement.repository.DuplicataTypeRepository;
 import com.radeel.DuplicataManagement.repository.ElectricityDuplicataRepository;
 import com.radeel.DuplicataManagement.repository.MonthRepository;
 import com.radeel.DuplicataManagement.repository.RequestStatusRepository;
-import com.radeel.DuplicataManagement.service.DuplicataManager;
 import com.radeel.DuplicataManagement.service.UserManager;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import net.datafaker.Faker;
 
 @SpringBootApplication
 public class DuplicataManagementApplication implements CommandLineRunner{
@@ -77,6 +77,11 @@ public class DuplicataManagementApplication implements CommandLineRunner{
   @Override
   @Transactional
   public void run(String... args) throws Exception {
+    
+    if(adminRepository.existsByEmail("admin")){
+      return;
+    }
+    
     Admin admin = new Admin(
       0,
       "admin",
@@ -84,10 +89,12 @@ public class DuplicataManagementApplication implements CommandLineRunner{
       passwordEncoder.encode("admin"),
       new ArrayList<>()
     );
-    adminRepository.save(admin);
+
     categoryRepository.saveAndFlush(
       new ClientCategory((short)0, "A",new ArrayList<>())
     );
+    
+    adminRepository.save(admin);
     Client client = new Client(
       0,true,"me","me",passwordEncoder.encode("me"),
       categoryRepository.findByName("A").get(),new ArrayList<>(),

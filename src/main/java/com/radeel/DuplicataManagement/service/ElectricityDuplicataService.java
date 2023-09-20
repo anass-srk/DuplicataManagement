@@ -3,6 +3,7 @@ package com.radeel.DuplicataManagement.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -14,10 +15,12 @@ import org.springframework.stereotype.Service;
 
 import com.radeel.DuplicataManagement.model.Client;
 import com.radeel.DuplicataManagement.model.ElectricityDuplicata;
-import com.radeel.DuplicataManagement.model.Location;
+import com.radeel.DuplicataManagement.model.ElectricityPolice;
+import com.radeel.DuplicataManagement.model.Locality;
 import com.radeel.DuplicataManagement.model.Month;
 import com.radeel.DuplicataManagement.model.Place;
 import com.radeel.DuplicataManagement.repository.ElectricityDuplicataRepository;
+import com.radeel.DuplicataManagement.repository.ElectricityPoliceRepository;
 import com.radeel.DuplicataManagement.util.DuplicataResponse;
 
 import jakarta.transaction.Transactional;
@@ -128,29 +131,46 @@ public class ElectricityDuplicataService extends DuplicataService{
       diff = 0;
     }
     try{
-    Location location = addLocation(
+    Locality location = addLocation(
       Short.parseShort(parts.get(getIndex(EleVars.NUM_LOC))),
       parts.get(getIndex(EleVars.AGENCE))
     );
     long police = Long.parseLong(parts.get(getIndex(EleVars.NUM_POL)));
-    Place place;
-    if(placeRepository.existsByLocationAndPoliceElectricity(location, police)){
-      place = placeRepository.findByLocationAndPoliceElectricity(location, police).get();
-    }else{
+    short sect = Short.parseShort(parts.get(getIndex(EleVars.NUM_SEC)));
+    short trn = Short.parseShort(parts.get(getIndex(EleVars.NUM_TRN)));
+    short ord = Short.parseShort(parts.get(getIndex(EleVars.NUM_ORD)));
+    Place place = placeRepository.findByLocationAndSectAndTrnAndOrd(location, sect, trn, ord).orElseGet(
+      () -> {
       String cat = diff == 0 ? parts.get(getIndex(EleVars.CAT)) : "A";
       String name = parts.get(getIndex(EleVars.NOM));
       Client client = generateClient(name, cat);
-      place = Place.builder()
+      return placeRepository.saveAndFlush(
+      Place.builder()
       .location(location)
       .sect(Short.parseShort(parts.get(getIndex(EleVars.NUM_SEC))))
       .trn(Short.parseShort(parts.get(getIndex(EleVars.NUM_TRN))))
       .ord(Short.parseShort(parts.get(getIndex(EleVars.NUM_ORD))))
-      .policeElectricity(police)
       .address(parts.get(getIndex(EleVars.ADRESSE_CONSOMMATION)))
       .client(client)
-      .electricityAccount(Long.parseLong(parts.get(getIndex(EleVars.NUMERO_COMPTEUR))))
-      .build();
-      placeRepository.saveAndFlush(place);
+      .electricityPolice(new ArrayList<>())
+      .waterPolice(new ArrayList<>())
+      .build()
+      );
+      }
+    );
+    
+    List<ElectricityPolice> electricityPolice = place.getElectricityPolice();
+    if(electricityPolice.size() == 0){
+      electricityPolice.add(
+        epoliceRepository.saveAndFlush(
+          new ElectricityPolice(
+            0,
+            police,
+            Long.parseLong(parts.get(getIndex(EleVars.NUMERO_COMPTEUR))),
+            place
+          )
+        )
+      );
     }
 
     Month mon = monthRepository.findById(Short.parseShort(parts.get(getIndex(EleVars.MOI)))).orElseThrow(
@@ -161,7 +181,7 @@ public class ElectricityDuplicataService extends DuplicataService{
         throw new IllegalStateException(String.format(
           "The electricity duplicata with localite %d and police %d\n"
               + "already exists for %d/%d",
-          place.getLocation().getId(), place.getPoliceElectricity(), year,
+          place.getLocation().getId(), electricityPolice.get(0).getPolice(), year,
           mon.getId()));
     }
 
@@ -285,24 +305,20 @@ public class ElectricityDuplicataService extends DuplicataService{
 
   @Override
   public DuplicataResponse exportDuplicata(short localite, long police, LocalDate date) {
-    var location = locationRepository.findById(localite);
-    if(!location.isPresent()){
+
+    var electricityPolice = epoliceRepository.findByPolice(police)
+    .stream().filter(p -> p.getPlace().getLocation().getId() == localite)
+    .toList();
+    if(electricityPolice.size() == 0){
       throw new IllegalStateException(String.format(
-        "No electricity duplicata exists with localite %d !",localite
+        "No electricity duplicata exists with localite %d and police %d !",localite,police
       ));
     }
-    var place = placeRepository.findByLocationAndPoliceElectricity(
-      location.get(),
-      police
-    );
-    if(!place.isPresent()){
-      throw new IllegalStateException(String.format(
-        "No electricity duplicata exists with police %d !",police
-      ));
-    }
+    var place = electricityPolice.get(0).getPlace();
+    
     return DuplicataResponse.fromElectricityDuplicata(
       repository.findByPlaceAndMonthAndYear(
-        place.get(),
+        place,
         monthRepository.findById((short)date.getMonthValue()).get(),
         (short)date.getYear()
       ).orElseThrow(
@@ -316,25 +332,23 @@ public class ElectricityDuplicataService extends DuplicataService{
 
   @Override
   public List<DuplicataResponse> exportDuplicatas(short localite, long police, LocalDate start, LocalDate end) {
-    var location = locationRepository.findById(localite);
-    if(!location.isPresent()){
+
+    var policeElectricity = epoliceRepository.findByPolice(police)
+    .stream().filter(p -> p.getPlace().getLocation().getId() == localite)
+    .toList();
+    if(policeElectricity.size() == 0){
       return Collections.emptyList();
     }
-    var place = placeRepository.findByLocationAndPoliceElectricity(
-      location.get(),
-      police
-    );
-    if(!place.isPresent()){
-      return Collections.emptyList();
-    }
+    var place = policeElectricity.get(0).getPlace();
     final int s = f(start.getYear(),start.getMonthValue());
     final int e = f(end.getYear(),end.getMonthValue());
     if(s > e){
       throw new IllegalStateException("The ending date should be after the starting date !");
     }
-    return repository.findByPlace(place.get()).stream()
+    return repository.findByPlace(place).stream()
     .filter(d -> between(s,f(d.getYear(),d.getMonth().getId()),e))
     .map(DuplicataResponse::fromElectricityDuplicata)
     .toList();
   }
+
 }

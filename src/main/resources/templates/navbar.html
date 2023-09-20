@@ -64,13 +64,16 @@
                 <a class="nav-link active" aria-current="page" href="/">Login</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="modify_client">modify account</a>
+                <a class="nav-link" href="modify_account">modify account</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="client_requests">list requests</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="create_request">create request</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="export">export duplicatas</a>
               </li>
               <li th:if="${logged_in}" class="nav-item">
                 <a class="nav-link" onclick="document.getElementById('Logout').submit();">Logout</a>

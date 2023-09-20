@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "LOC")
-public class Location {
+public class Locality {
   @Id
   @Column(name = "LOC_ID")
   private short id;
